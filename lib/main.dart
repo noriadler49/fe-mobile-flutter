@@ -14,15 +14,21 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatelessWidget {
-  final ScrollController _scrollController = ScrollController();
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final PageController _pageController = PageController(viewportFraction: 0.85);
+  bool _isSearchBarVisible = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
         children: [
-          // Decorative Header
+          // Decorative Header with Search Bar
           Container(
             padding: EdgeInsets.all(16.0),
             decoration: BoxDecoration(
@@ -33,24 +39,58 @@ class MyHomePage extends StatelessWidget {
               ),
               borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Column(
               children: [
-                Text(
-                  'MENU',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(Icons.favorite, color: Colors.white, size: 20),
-                    SizedBox(width: 4),
-                    Icon(Icons.fastfood, color: Colors.white, size: 20),
+                    Row(
+                      children: [
+                        Text(
+                          'MENU',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        IconButton(
+                          icon: Icon(Icons.search, color: Colors.white, size: 20),
+                          onPressed: () {
+                            setState(() {
+                              _isSearchBarVisible = !_isSearchBarVisible;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Icon(Icons.shopping_cart, color: Colors.white, size: 20),
+                        SizedBox(width: 4),
+                        Icon(Icons.menu, color: Colors.white, size: 20),
+                      ],
+                    ),
                   ],
                 ),
+                if (_isSearchBarVisible) ...[
+                  SizedBox(height: 8),
+                  TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Search menu...',
+                      hintStyle: TextStyle(color: Colors.white70),
+                      prefixIcon: Icon(Icons.search, color: Colors.white),
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.2),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ],
               ],
             ),
           ),
@@ -62,7 +102,7 @@ class MyHomePage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'FOOD',
+                    'TODAY\'S MENU',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -70,43 +110,15 @@ class MyHomePage extends StatelessWidget {
                     ),
                   ),
                   SizedBox(height: 16),
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.arrow_back_ios),
-                        onPressed: () {
-                          _scrollController.animateTo(
-                            _scrollController.offset - 200,
-                            duration: Duration(milliseconds: 300),
-                            curve: Curves.easeInOut,
-                          );
-                        },
-                      ),
-                      Expanded(
-                        child: SingleChildScrollView(
-                          controller: _scrollController,
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: [
-                              _buildFoodItem(context, 'assets/spaghetti.png', 'Spaghetti'),
-                              _buildFoodItem(context, 'assets/burger.png', 'Burger'),
-                              _buildFoodItem(context, 'assets/pizza.png', 'Pizza'),
-                              // Remove or add _buildFoodItem('assets/salad.png', 'Salad') if you have it
-                            ],
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.arrow_forward_ios),
-                        onPressed: () {
-                          _scrollController.animateTo(
-                            _scrollController.offset + 200,
-                            duration: Duration(milliseconds: 300),
-                            curve: Curves.easeInOut,
-                          );
-                        },
-                      ),
-                    ],
+                  Expanded(
+                    child: PageView(
+                      controller: _pageController,
+                      children: [
+                        _buildFoodItem(context, 'assets/spaghetti.png', 'Spaghetti'),
+                        _buildFoodItem(context, 'assets/burger.png', 'Burger'),
+                        _buildFoodItem(context, 'assets/pizza.png', 'Pizza'),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -119,8 +131,7 @@ class MyHomePage extends StatelessWidget {
 
   Widget _buildFoodItem(BuildContext context, String imagePath, String title) {
     return Container(
-      width: MediaQuery.of(context).size.width - 80, // Adjust for padding and buttons
-      margin: EdgeInsets.only(right: 16.0),
+      margin: EdgeInsets.symmetric(horizontal: 8.0),
       child: Card(
         elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -131,8 +142,8 @@ class MyHomePage extends StatelessWidget {
               borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
               child: Image.asset(
                 imagePath,
-                width: MediaQuery.of(context).size.width - 80,
-                height: 300, // Larger height for bigger images
+                width: MediaQuery.of(context).size.width * 0.85,
+                height: 200,
                 fit: BoxFit.cover,
               ),
             ),
