@@ -94,6 +94,25 @@ class _MyHomePageState extends State<MyHomePage> {
               ],
             ),
           ),
+                    // Welcome Box
+          Container(
+            padding: EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.red, width: 4),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  'Welcome to Our FOS',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.red),
+                ),
+                Text(
+                  'Hungry? Then ready to Order',
+                  style: TextStyle(fontSize: 16, color: Colors.red),
+                ),
+              ],
+            ),
+          ),
           // Food Section
           Expanded(
             child: Padding(
@@ -114,9 +133,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: PageView(
                       controller: _pageController,
                       children: [
-                        _buildFoodItem(context, 'assets/spaghetti.png', 'Spaghetti'),
-                        _buildFoodItem(context, 'assets/burger.png', 'Burger'),
-                        _buildFoodItem(context, 'assets/pizza.png', 'Pizza'),
+                        _buildFoodItem(context, 'assets/spaghetti.png', 'Spaghetti', '10'),
+                        _buildFoodItem(context, 'assets/burger.png', 'Burger', '8'),
+                        _buildFoodItem(context, 'assets/pizza.png', 'Pizza', '12'),
                       ],
                     ),
                   ),
@@ -129,14 +148,14 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget _buildFoodItem(BuildContext context, String imagePath, String title) {
+  Widget _buildFoodItem(BuildContext context, String imagePath, String title, String price) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 8.0),
+      margin: EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
       child: Card(
-        elevation: 4,
+        elevation: 2,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             ClipRRect(
               borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
@@ -149,9 +168,21 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             Padding(
               padding: EdgeInsets.all(12.0),
-              child: Text(
-                title,
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    '\$$price',
+                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
             ),
           ],
