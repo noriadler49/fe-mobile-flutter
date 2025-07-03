@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:fe_mobile/FE/auth_status.dart';
+import 'package:fe_mobile_flutter/FE/auth_status.dart';
 
 class LoginScreen extends StatelessWidget {
   final TextEditingController userController = TextEditingController();
