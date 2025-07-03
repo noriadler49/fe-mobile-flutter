@@ -1,3 +1,15 @@
+<<<<<<< HEAD
+// ext {
+//     set("compileSdkVersion", 35)
+//     set("targetSdkVersion", 35)
+//     set("minSdkVersion", 21)
+// }
+extra["compileSdkVersion"] = 35
+extra["targetSdkVersion"] = 35
+extra["minSdkVersion"] = 21
+
+=======
+>>>>>>> fa09a65295c49b1edae43ba7d51002379a294e82
 allprojects {
     repositories {
         google()

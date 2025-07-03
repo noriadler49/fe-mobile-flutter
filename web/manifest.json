@@ -1,6 +1,11 @@
 {
+<<<<<<< HEAD
+    "name": "fe_mobile",
+    "short_name": "fe_mobile",
+=======
     "name": "frontend_mobile_flutter",
     "short_name": "frontend_mobile_flutter",
+>>>>>>> fa09a65295c49b1edae43ba7d51002379a294e82
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

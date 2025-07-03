@@ -1,10 +1,103 @@
 import 'package:flutter/material.dart';
 
+<<<<<<< HEAD
+import 'package:fe_mobile/FE/auth_status.dart';
+
+import 'FE/home_screen.dart';
+import 'FE/food_deal_screen.dart';
+import 'FE/food_deal_details.dart';
+import 'FE/food_details_screen.dart'; // <- new
+import 'FE/my_cart.dart';
+import 'FE/signup_screen.dart';
+import 'FE/login_screen.dart';
+
+// bool isLoggedIn = false; // Temporary flag
+
+=======
+>>>>>>> fa09a65295c49b1edae43ba7d51002379a294e82
 void main() {
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
+<<<<<<< HEAD
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'FOS Food App',
+      debugShowCheckedModeBanner: false,
+      initialRoute: '/',
+      routes: {
+        '/': (context) => HomeScreen(),
+        '/deals': (context) => FoodDealScreen(),
+        '/details': (context) => FoodDealDetails(),
+
+        '/cart': (context) => MyCart(),
+        '/signup': (context) => SignUpScreen(),
+        '/login': (context) => LoginScreen(),
+      },
+      onGenerateRoute: (settings) {
+        if (settings.name == '/foodDetail') {
+          final args = settings.arguments as Map<String, String>;
+          return MaterialPageRoute(
+            builder: (context) => FoodDetailsScreen(
+              name: args['name']!,
+              price: args['price']!,
+              image: args['image']!,
+            ),
+          );
+        }
+        return null; // or you could return a 404 page
+      },
+    );
+  }
+}
+// import 'package:flutter/material.dart';
+// import 'FE/checkout_screen.dart';
+// import 'FE/address_screen.dart';
+
+// void main() {
+//   runApp(MyApp());
+// }
+
+// class MyApp extends StatelessWidget {
+//   const MyApp({super.key});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       title: 'Food Order App',
+//       theme: ThemeData(primarySwatch: Colors.red),
+//       home: CheckoutScreen(
+//         userName: "Quan",
+//         phoneNumber: "+84 123456789",
+//         address: "No.1 Lmain Street",
+//         cartItems: [
+//           {
+//             'shop': 'Pizza Shop',
+//             'name': 'Pizza',
+//             'ingredients': 'Tomato + Meat',
+//             'price': 5.99,
+//             'quantity': 1,
+//             'image': 'https://cdn-icons-png.flaticon.com/512/1404/1404945.png',
+//           },
+//           {
+//             'shop': 'Burger Place',
+//             'name': 'Burger',
+//             'ingredients': 'Vegetable + Meat + Sauce',
+//             'price': 5.99,
+//             'quantity': 1,
+//             'image': 'https://cdn-icons-png.flaticon.com/512/3075/3075977.png',
+//           },
+//         ],
+//       ),
+//       routes: {
+//         '/address': (context) => AddressScreen(), // ✅ Add this
+//       },
+//     );
+//   }
+// }
+=======
   const MyApp({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
@@ -191,3 +284,4 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
+>>>>>>> fa09a65295c49b1edae43ba7d51002379a294e82
