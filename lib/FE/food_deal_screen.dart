@@ -1,37 +1,54 @@
 import 'package:flutter/material.dart';
 
+class FoodDealScreen extends StatefulWidget {
+  FoodDealScreen({super.key});
 
-class FoodDealScreen extends StatelessWidget {
+  @override
+  _FoodDealScreenState createState() => _FoodDealScreenState();
+}
+
+class _FoodDealScreenState extends State<FoodDealScreen> {
   final List<Map<String, String>> foodDeals = [
-    {"title": "From A", "image": "🍝", "price": "\$8"},
-    {"title": "From B", "image": "🍔", "price": "\$6"},
-    {"title": "From C", "image": "🍕", "price": "\$9"},
+    {"title": "From A", "image": "assets/spaghetti.png", "price": "\$8"},
+    {"title": "From B", "image": "assets/burger.png", "price": "\$6"},
+    {"title": "From C", "image": "assets/pizza.png", "price": "\$9"},
   ];
-
-  FoodDealScreen({super.key}); // ❌ Không dùng const /dùng data demo
+  bool _isSearchBarVisible = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Food Deal"), backgroundColor: Colors.red),
-      body: Padding(
-        padding: EdgeInsets.all(10),
-        child: ListView.builder(
-          itemCount: foodDeals.length,
-          itemBuilder: (context, index) {
-            final food = foodDeals[index];
-            return Card(
-              margin: EdgeInsets.symmetric(vertical: 10),
-              child: ListTile(
-                leading: Text(food["image"]!, style: TextStyle(fontSize: 40)),
-                title: Text(food["title"]!),
-                subtitle: Text("Ingredients: etc."),
-                trailing: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(food["price"]!),
-                    ElevatedButton(
-                    onPressed: () {
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Header using the template from main.dart
+            buildHeader(
+              title: 'MENU',
+              rightIcons: [
+                Icon(Icons.shopping_cart, color: Colors.white, size: 20),
+                SizedBox(width: 4),
+                Icon(Icons.menu, color: Colors.white, size: 20),
+                SizedBox(width: 4),
+              ],
+              isSearchBarVisible: _isSearchBarVisible,
+              onSearchPressed: () {
+                setState(() {
+                  _isSearchBarVisible = !_isSearchBarVisible;
+                });
+              },
+              searchHintText: 'Search menu...',
+            ),
+            // Food Deals Section
+            Padding(
+              padding: EdgeInsets.all(10),
+              child: ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: foodDeals.length,
+                itemBuilder: (context, index) {
+                  final food = foodDeals[index];
+                  return GestureDetector(
+                    onTap: () {
                       Navigator.pushNamed(
                         context,
                         '/foodDetail',
@@ -42,17 +59,73 @@ class FoodDealScreen extends StatelessWidget {
                         },
                       );
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
+                    child: Card(
+                      margin: EdgeInsets.symmetric(vertical: 10, horizontal: 8.0),
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                            child: Image.asset(
+                              food['image']!,
+                              width: MediaQuery.of(context).size.width * 0.85,
+                              height: 200,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.all(12.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  food['title']!,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  food['price']!,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                                SizedBox(height: 10),
+                                Text("Ingredients: etc."),
+                                SizedBox(height: 10),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.pushNamed(
+                                      context,
+                                      '/foodDetail',
+                                      arguments: {
+                                        'name': food['title']!,
+                                        'price': food['price']!,
+                                        'image': food['image']!,
+                                      },
+                                    );
+                                  },
+                                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                  child: Text("Buy now"),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    child: Text("Buy now"),
-                  ),
-
-                  ],
-                ),
+                  );
+                },
               ),
-            );
-          },
+            ),
+          ],
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -69,6 +142,72 @@ class FoodDealScreen extends StatelessWidget {
         onTap: (index) {
           if (index == 0) Navigator.pop(context);
         },
+      ),
+    );
+  }
+
+  Widget buildHeader({
+    required String title,
+    required List<Widget> rightIcons,
+    required bool isSearchBarVisible,
+    required VoidCallback onSearchPressed,
+    String? searchHintText,
+  }) {
+    return Container(
+      padding: EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.red, Colors.redAccent],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  IconButton(
+                    icon: Icon(Icons.search, color: Colors.white, size: 20),
+                    onPressed: onSearchPressed,
+                  ),
+                ],
+              ),
+              Row(
+                children: rightIcons,
+              ),
+            ],
+          ),
+          if (isSearchBarVisible) ...[
+            SizedBox(height: 8),
+            TextField(
+              decoration: InputDecoration(
+                hintText: searchHintText ?? 'Search...',
+                hintStyle: TextStyle(color: Colors.white70),
+                prefixIcon: Icon(Icons.search, color: Colors.white),
+                filled: true,
+                fillColor: Colors.white.withOpacity(0.2),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+              style: TextStyle(color: Colors.white),
+            ),
+          ],
+        ],
       ),
     );
   }
