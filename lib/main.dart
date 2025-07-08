@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'package:fe_mobile_flutter/FE/auth_status.dart';
 
-
 import 'FE/home_screen.dart';
 import 'FE/food_deal_screen.dart';
 import 'FE/food_deal_details.dart';
@@ -10,7 +9,8 @@ import 'FE/food_details_screen.dart'; // <- new
 import 'FE/my_cart.dart';
 import 'FE/signup_screen.dart';
 import 'FE/login_screen.dart';
-
+import 'FE/checkout_screen.dart';
+import 'FE/address_screen.dart';
 // bool isLoggedIn = false; // Temporary flag
 
 void main() {
@@ -32,6 +32,7 @@ class MyApp extends StatelessWidget {
         '/cart': (context) => MyCart(),
         '/signup': (context) => SignUpScreen(),
         '/login': (context) => LoginScreen(),
+        '/address': (context) => AddressScreen(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/foodDetail') {
@@ -46,6 +47,18 @@ class MyApp extends StatelessWidget {
             ),
           );
         }
+        if (settings.name == '/checkout') {
+          final args = Map<String, dynamic>.from(settings.arguments as Map);
+          return MaterialPageRoute(
+            builder: (context) => CheckoutScreen(
+              userName: args['userName'],
+              phoneNumber: args['phoneNumber'],
+              address: args['address'],
+              cartItems: List<Map<String, dynamic>>.from(args['cartItems']),
+            ),
+          );
+        }
+
         return null; // or you could return a 404 page
       },
     );
