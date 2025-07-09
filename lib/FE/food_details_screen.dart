@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'auth_status.dart'; 
+import 'auth_status.dart';
 
 class FoodDetailsScreen extends StatefulWidget {
   final String name;
@@ -60,19 +60,13 @@ class _FoodDetailsScreenState extends State<FoodDetailsScreen> {
                   Text(
                     widget.name,
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 4),
                   Text(
                     '\$${widget.price}',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                   ),
                   SizedBox(height: 10),
                   Text("Ingredients: etc."),
@@ -85,7 +79,9 @@ class _FoodDetailsScreenState extends State<FoodDetailsScreen> {
                         Navigator.pushNamed(context, '/cart');
                       }
                     },
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                    ),
                     child: Text("Add to Cart"),
                   ),
                 ],
@@ -106,7 +102,11 @@ class _FoodDetailsScreenState extends State<FoodDetailsScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],
         onTap: (index) {
-          if (index == 0) Navigator.pushNamed(context, '/');
+          if (index == 0) Navigator.pushNamed(context, '/'); // Home
+          if (index == 1) Navigator.pushNamed(context, '/cart');
+          if (index == 2) print('Like tapped');
+          if (index == 3)
+            Navigator.pushNamed(context, '/login'); // Account → Login
         },
       ),
     );
@@ -151,14 +151,10 @@ class _FoodDetailsScreenState extends State<FoodDetailsScreen> {
                   ),
                 ],
               ),
-              Row(
-                children: rightIcons,
-              ),
+              Row(children: rightIcons),
             ],
           ),
-          if (isSearchBarVisible)
-
- ...[
+          if (isSearchBarVisible) ...[
             SizedBox(height: 8),
             TextField(
               decoration: InputDecoration(

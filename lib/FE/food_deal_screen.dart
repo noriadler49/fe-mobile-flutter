@@ -60,14 +60,21 @@ class _FoodDealScreenState extends State<FoodDealScreen> {
                       );
                     },
                     child: Card(
-                      margin: EdgeInsets.symmetric(vertical: 10, horizontal: 8.0),
+                      margin: EdgeInsets.symmetric(
+                        vertical: 10,
+                        horizontal: 8.0,
+                      ),
                       elevation: 2,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           ClipRRect(
-                            borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(12),
+                            ),
                             child: Image.asset(
                               food['image']!,
                               width: MediaQuery.of(context).size.width * 0.85,
@@ -112,7 +119,9 @@ class _FoodDealScreenState extends State<FoodDealScreen> {
                                       },
                                     );
                                   },
-                                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red,
+                                  ),
                                   child: Text("Buy now"),
                                 ),
                               ],
@@ -140,7 +149,11 @@ class _FoodDealScreenState extends State<FoodDealScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],
         onTap: (index) {
-          if (index == 0) Navigator.pop(context);
+          if (index == 0) Navigator.pushNamed(context, '/'); // Home
+          if (index == 1) Navigator.pushNamed(context, '/cart');
+          if (index == 2) print('Like tapped');
+          if (index == 3)
+            Navigator.pushNamed(context, '/login'); // Account → Login
         },
       ),
     );
@@ -185,9 +198,7 @@ class _FoodDealScreenState extends State<FoodDealScreen> {
                   ),
                 ],
               ),
-              Row(
-                children: rightIcons,
-              ),
+              Row(children: rightIcons),
             ],
           ),
           if (isSearchBarVisible) ...[

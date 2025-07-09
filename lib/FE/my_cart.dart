@@ -15,7 +15,7 @@ class MyCart extends StatelessWidget {
         child: Column(
           children: [
             ListTile(
-              leading: Image.network('https://via.placeholder.com/50'),
+              leading: Image.network('https://via.placeholder.com/50'), //check
               title: Text(foodName),
               subtitle: Text("\$$price"),
               trailing: Row(
@@ -28,7 +28,10 @@ class MyCart extends StatelessWidget {
               ),
             ),
             SizedBox(height: 20),
-            Text("Total: \$$price", style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              "Total: \$$price",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             Spacer(),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -41,13 +44,32 @@ class MyCart extends StatelessWidget {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    // buy logic here
+                    Navigator.pushNamed(
+                      context,
+                      '/checkout',
+                      arguments: {
+                        'userName':
+                            'Quan', // example name, replace with actual user data
+                        'phoneNumber': '+84 123456789', // example phone
+                        'address': 'No.1 Lmain Street', // example address
+                        'cartItems': [
+                          {
+                            'shop': 'Pizza Shop',
+                            'name': 'Spaghetti',
+                            'ingredients': 'Spaghetti + Meat + Tomato Sauce',
+                            'price': 5.99,
+                            'quantity': 1,
+                            'image': 'https://via.placeholder.com/50',
+                          },
+                        ],
+                      },
+                    );
                   },
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                   child: Text("Buy"),
                 ),
               ],
-            )
+            ),
           ],
         ),
       ),
@@ -55,12 +77,19 @@ class MyCart extends StatelessWidget {
         selectedItemColor: Colors.red,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Cart'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_cart),
+            label: 'Cart',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Like'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],
         onTap: (index) {
-          if (index == 0) Navigator.pushNamed(context, '/');
+          if (index == 0) Navigator.pushNamed(context, '/'); // Home
+          if (index == 1) print('Cart tapped');
+          if (index == 2) print('Like tapped');
+          if (index == 3)
+            Navigator.pushNamed(context, '/login'); // Account → Login
         },
       ),
     );
