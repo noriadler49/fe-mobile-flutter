@@ -25,10 +25,15 @@ class SignUpScreen extends StatelessWidget {
               buildInputField(Icons.lock, "Password", passwordController, obscure: true),
               SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.pushNamed(context, '/login');
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
                   padding: EdgeInsets.symmetric(horizontal: 60, vertical: 15),
+                  // shape: RoundedRectangleBorder(
+                  //   borderRadius: BorderRadius.zero,
+                  // ),
                 ),
                 child: Text("Create an account"),
               ),

@@ -22,29 +22,37 @@ class LoginScreen extends StatelessWidget {
         padding: EdgeInsets.all(20),
         child: Column(
           children: [
-            TextField(
-              controller: userController,
-              decoration: InputDecoration(labelText: "Account ID"),
-            ),
-            TextField(
-              controller: passController,
-              obscureText: true,
-              decoration: InputDecoration(labelText: "Password"),
-            ),
+            buildInputField(Icons.person, "Username", userController),
+            buildInputField(Icons.lock, "Password", passController, obscure: true),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
                 isLoggedIn = true; // giả lập đăng nhập thành công
-                Navigator.pushNamed(context, '/cart'); // về giỏ hàng
+                Navigator.pushNamed(context, '/'); // về menu
               },
-              child: Text("Login"),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: Text("Login"),
             ),
             TextButton(
               onPressed: () => Navigator.pushNamed(context, '/signup'),
               child: Text("Register?"),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildInputField(IconData icon, String label, TextEditingController controller, {bool obscure = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: TextField(
+        controller: controller,
+        obscureText: obscure,
+        decoration: InputDecoration(
+          prefixIcon: Icon(icon),
+          labelText: label,
+          border: OutlineInputBorder(),
         ),
       ),
     );
