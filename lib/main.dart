@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
-
 import 'package:fe_mobile_flutter/FE/auth_status.dart';
-
 import 'FE/home_screen.dart';
 import 'FE/food_deal_screen.dart';
 import 'FE/food_deal_details.dart';
-import 'FE/food_details_screen.dart'; // <- new
+import 'FE/food_details_screen.dart';
 import 'FE/my_cart.dart';
 import 'FE/signup_screen.dart';
 import 'FE/login_screen.dart';
 import 'FE/checkout_screen.dart';
 import 'FE/address_screen.dart';
-// bool isLoggedIn = false; // Temporary flag
+import 'FE/don_hang.dart';
+import 'FE/order_detail.dart';
+import 'FE/ADMIN/admin_dashboard.dart';
+import 'FE/ADMIN/admin_all.dart';
+import 'FE/ADMIN/admin_add.dart';
+import 'FE/ADMIN/admin_ingredient.dart';
 
 void main() {
   runApp(MyApp());
@@ -28,17 +31,23 @@ class MyApp extends StatelessWidget {
         '/': (context) => HomeScreen(),
         '/deals': (context) => FoodDealScreen(),
         '/details': (context) => FoodDealDetails(),
-
         '/cart': (context) => MyCart(),
         '/signup': (context) => SignUpScreen(),
         '/login': (context) => LoginScreen(),
         '/address': (context) => AddressScreen(),
+        '/orderHistory': (context) => OrderPage(),
+        '/profile': (context) => Scaffold(
+              appBar: AppBar(title: Text('Profile')),
+              body: Center(child: Text('Profile Screen (To be implemented)')),
+            ),
+        '/admin/dashboard': (context) => AdminDashboardScreen(),
+        '/admin/orders': (context) => AllOrdersScreen(),
+        '/admin/add': (context) => AdminAddDishScreen(),
+        '/admin/ingredients': (context) => ManageIngredientsScreen(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/foodDetail') {
-          // final args = settings.arguments as Map<String, String>;
           final args = Map<String, String>.from(settings.arguments as Map);
-
           return MaterialPageRoute(
             builder: (context) => FoodDetailsScreen(
               name: args['name']!,
@@ -58,8 +67,19 @@ class MyApp extends StatelessWidget {
             ),
           );
         }
-
-        return null; // or you could return a 404 page
+        if (settings.name == '/orderDetails') {
+          final args = Map<String, dynamic>.from(settings.arguments as Map);
+          return MaterialPageRoute(
+            builder: (context) => OrderDetailsScreen(
+              orderId: args['orderId'],
+              date: args['date'],
+              items: List<Map<String, dynamic>>.from(args['items']),
+              address: args['address'],
+              status: args['status'],
+            ),
+          );
+        }
+        return null;
       },
     );
   }

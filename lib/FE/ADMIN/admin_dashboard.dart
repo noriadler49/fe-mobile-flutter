@@ -1,19 +1,10 @@
 import 'package:flutter/material.dart';
+import 'admin_all.dart';
+import 'admin_add.dart';
+import 'admin_ingredient.dart';
 
-class ManageIngredientsScreen extends StatefulWidget {
-  const ManageIngredientsScreen({super.key});
-
-  @override
-  _ManageIngredientsScreenState createState() => _ManageIngredientsScreenState();
-}
-
-class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
-  final _nameController = TextEditingController();
-  final _idController = TextEditingController();
-  final List<Map<String, String>> ingredients = [
-    {"id": "1", "name": "Tomato"},
-    {"id": "2", "name": "Onion"},
-  ];
+class AdminDashboardScreen extends StatelessWidget {
+  const AdminDashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -98,7 +89,7 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
                           },
                         ),
                         Text(
-                          'Quản lý nguyên liệu',
+                          'Admin Dashboard',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -110,56 +101,70 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
                   ],
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextField(
-                      controller: _nameController,
-                      decoration: InputDecoration(labelText: 'Ingredient Name:'),
-                    ),
-                    SizedBox(height: 16),
-                    TextField(
-                      controller: _idController,
-                      decoration: InputDecoration(labelText: 'Ingredient ID:'),
-                    ),
-                    SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () {},
-                      child: Text('Add'),
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                    ),
-                  ],
+              // Welcome Message
+              Center(
+                child: Container(
+                  width: MediaQuery.of(context).size.width * 0.9,
+                  padding: EdgeInsets.all(16.0),
+                  margin: EdgeInsets.symmetric(vertical: 12.0),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.red, width: 3),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Welcome to Admin Panel',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Manage orders, dishes, and ingredients',
+                        style: TextStyle(fontSize: 16, color: Colors.red),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 ),
               ),
+              // Quick Access Buttons
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Danh sách nguyên liệu:",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      'Quick Actions',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        decoration: TextDecoration.underline,
+                      ),
                     ),
-                    SizedBox(height: 8),
-                    Table(
-                      border: TableBorder.all(color: Colors.grey),
+                    SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        TableRow(
-                          children: [
-                            Padding(padding: EdgeInsets.all(8.0), child: Text('ID', style: TextStyle(fontWeight: FontWeight.bold))),
-                            Padding(padding: EdgeInsets.all(8.0), child: Text("Ingredient Name", style: TextStyle(fontWeight: FontWeight.bold))),
-                            Padding(padding: EdgeInsets.all(8.0), child: Text('Thao tác', style: TextStyle(fontWeight: FontWeight.bold))),
-                          ],
+                        ElevatedButton(
+                          onPressed: () => Navigator.pushNamed(context, '/admin/orders'),
+                          child: Text('View Orders'),
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                         ),
-                        ...ingredients.map((ingredient) => TableRow(
-                          children: [
-                            Padding(padding: EdgeInsets.all(8.0), child: Text(ingredient['id']!)),
-                            Padding(padding: EdgeInsets.all(8.0), child: Text(ingredient['name']!)),
-                            Padding(padding: EdgeInsets.all(8.0), child: Icon(Icons.edit)),
-                          ],
-                        )).toList(),
+                        ElevatedButton(
+                          onPressed: () => Navigator.pushNamed(context, '/admin/add'),
+                          child: Text('Add Dish'),
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                        ),
+                        ElevatedButton(
+                          onPressed: () => Navigator.pushNamed(context, '/admin/ingredients'),
+                          child: Text('Manage Ingredients'),
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                        ),
                       ],
                     ),
                   ],

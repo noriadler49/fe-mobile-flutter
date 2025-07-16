@@ -19,125 +19,209 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
           children: [
-            // Header using the template
-            buildHeader(
-              title: 'MENU',
-              rightIcons: [
-                Icon(Icons.shopping_cart, color: Colors.white, size: 20),
-                SizedBox(width: 4),
-                Icon(Icons.menu, color: Colors.white, size: 20),
-                SizedBox(width: 4),
-              ],
-              isSearchBarVisible: _isSearchBarVisible,
-              onSearchPressed: () {
-                setState(() {
-                  _isSearchBarVisible = !_isSearchBarVisible;
-                });
-              },
-              searchHintText: 'Search menu...',
-            ),
-            // Welcome Box
-            Container(
-              padding: EdgeInsets.all(16.0),
-              margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+            DrawerHeader(
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.red, width: 4),
+                gradient: LinearGradient(
+                  colors: [Colors.red, Colors.redAccent],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
               ),
-              child: Column(
-                children: [
-                  Text(
-                    'Welcome to Our FOS',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red,
-                    ),
-                  ),
-                  Text(
-                    'Hungry? Then ready to Order',
-                    style: TextStyle(fontSize: 16, color: Colors.red),
-                  ),
-                ],
+              child: Text(
+                'Menu',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-            // Food Section
-            Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Feature List",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                      decoration: TextDecoration.underline,
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  Container(
-                    height: 300, // Fixed height for PageView
-                    child: PageView(
-                      controller: _pageController,
-                      children: foods.map((food) {
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.pushNamed(
-                              context,
-                              '/foodDetail',
-                              arguments: {
-                                'name': food['name']!,
-                                'price': food['price']!,
-                                'image': food['image']!,
-                              },
-                            );
-                          },
-                          child: _buildFoodItem(
-                            context,
-                            food['image']!,
-                            food['name']!,
-                            food['price']!.replaceAll('\$', ''),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ],
-              ),
+            ListTile(
+              leading: Icon(Icons.restaurant_menu, color: Colors.red),
+              title: Text('Menu'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/menu');
+              },
             ),
-            Align(
-              alignment: Alignment.centerRight,
-              child: IconButton(
-                icon: Icon(Icons.arrow_forward_ios, color: Colors.red),
-                onPressed: () {
-                  Navigator.pushNamed(context, '/deals');
-                },
-              ),
+            ListTile(
+              leading: Icon(Icons.favorite, color: Colors.red),
+              title: Text('Favorites'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/favorites');
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.history, color: Colors.red),
+              title: Text('Order History'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/orderHistory');
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.settings, color: Colors.red),
+              title: Text('Settings'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/settings');
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.contact_support, color: Colors.red),
+              title: Text('Contact Us'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/contact');
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.admin_panel_settings, color: Colors.red),
+              title: Text('Admin Dashboard'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/admin/dashboard');
+              },
             ),
           ],
         ),
       ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header with Drawer toggle
+              buildHeader(
+                title: 'MENU',
+                rightIcons: [
+                  IconButton(
+                    icon: Icon(Icons.shopping_cart, color: Colors.white, size: 20),
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/cart');
+                    },
+                  ),
+                ],
+                isSearchBarVisible: _isSearchBarVisible,
+                onSearchPressed: () {
+                  setState(() {
+                    _isSearchBarVisible = !_isSearchBarVisible;
+                  });
+                },
+                searchHintText: 'Search menu...',
+              ),
+              // Welcome Box
+              Center(
+                child: Container(
+                  width: MediaQuery.of(context).size.width * 0.9,
+                  padding: EdgeInsets.all(16.0),
+                  margin: EdgeInsets.symmetric(vertical: 12.0),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.red, width: 3),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Welcome to Our FOS',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Hungry? Then ready to Order',
+                        style: TextStyle(fontSize: 16, color: Colors.red),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // Food Section
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Feature List",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                    SizedBox(height: 12),
+                    Container(
+                      height: 280,
+                      child: PageView(
+                        controller: _pageController,
+                        physics: ClampingScrollPhysics(),
+                        children: foods.map((food) {
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.pushNamed(
+                                context,
+                                '/foodDetail',
+                                arguments: {
+                                  'name': food['name']!,
+                                  'price': food['price']!,
+                                  'image': food['image']!,
+                                },
+                              );
+                            },
+                            child: _buildFoodItem(
+                              context,
+                              food['image']!,
+                              food['name']!,
+                              food['price']!.replaceAll('\$', ''),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.only(right: 16.0),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: IconButton(
+                    icon: Icon(Icons.arrow_forward_ios, color: Colors.red),
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/deals');
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: Colors.red,
+        unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
-            label: 'Cart',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Cart'),
           BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Like'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],
         onTap: (index) {
-          if (index == 0) return; // Home
+          if (index == 0) return;
           if (index == 1) Navigator.pushNamed(context, '/cart');
           if (index == 2) print('Like tapped');
-          if (index == 3)
-            Navigator.pushNamed(context, '/login'); // Account → Login
+          if (index == 3) Navigator.pushNamed(context, '/login');
         },
       ),
     );
@@ -146,19 +230,18 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildFoodItem(
       BuildContext context, String imagePath, String title, String price) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+      margin: EdgeInsets.symmetric(horizontal: 8.0),
       child: Card(
-        elevation: 2,
+        elevation: 3,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             ClipRRect(
               borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
               child: Image.asset(
                 imagePath,
-                width: MediaQuery.of(context).size.width * 0.85,
-                height: 200,
+                width: double.infinity,
+                height: 180,
                 fit: BoxFit.cover,
               ),
             ),
@@ -195,14 +278,14 @@ class _HomeScreenState extends State<HomeScreen> {
     String? searchHintText,
   }) {
     return Container(
-      padding: EdgeInsets.all(16.0),
+      padding: EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 12.0),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [Colors.red, Colors.redAccent],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
       ),
       child: Column(
         children: [
@@ -211,6 +294,16 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Row(
                 children: [
+                  Builder(
+                    builder: (BuildContext context) {
+                      return IconButton(
+                        icon: Icon(Icons.menu, color: Colors.white, size: 20),
+                        onPressed: () {
+                          Scaffold.of(context).openDrawer();
+                        },
+                      );
+                    },
+                  ),
                   Text(
                     title,
                     style: TextStyle(
@@ -226,9 +319,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
-              Row(
-                children: rightIcons,
-              ),
+              Row(children: rightIcons),
             ],
           ),
           if (isSearchBarVisible) ...[

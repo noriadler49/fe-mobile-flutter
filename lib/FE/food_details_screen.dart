@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'auth_status.dart';
 
 class FoodDetailsScreen extends StatefulWidget {
   final String name;
@@ -22,91 +21,106 @@ class _FoodDetailsScreenState extends State<FoodDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Header using the template from main.dart
-            buildHeader(
-              title: 'MENU',
-              rightIcons: [
-                Icon(Icons.shopping_cart, color: Colors.white, size: 20),
-                SizedBox(width: 4),
-                Icon(Icons.menu, color: Colors.white, size: 20),
-                SizedBox(width: 4),
-              ],
-              isSearchBarVisible: _isSearchBarVisible,
-              onSearchPressed: () {
-                setState(() {
-                  _isSearchBarVisible = !_isSearchBarVisible;
-                });
-              },
-              searchHintText: 'Search menu...',
-            ),
-            // Food Details
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.asset(
-                      widget.image,
-                      width: MediaQuery.of(context).size.width * 0.85,
-                      height: 200,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    widget.name,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    '\$${widget.price}',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                  ),
-                  SizedBox(height: 10),
-                  Text("Ingredients: etc."),
-                  SizedBox(height: 20),
-                  ElevatedButton(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              // Header
+              buildHeader(
+                title: 'MENU',
+                rightIcons: [
+                  IconButton(
+                    icon: Icon(Icons.shopping_cart, color: Colors.white, size: 20),
                     onPressed: () {
-                      if (!isLoggedIn) {
-                        Navigator.pushNamed(context, '/login');
-                      } else {
-                        Navigator.pushNamed(context, '/cart');
-                      }
+                      Navigator.pushNamed(context, '/cart');
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                    ),
-                    child: Text("Add to Cart"),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.menu, color: Colors.white, size: 20),
+                    onPressed: () {
+                      print('Menu tapped');
+                    },
                   ),
                 ],
+                isSearchBarVisible: _isSearchBarVisible,
+                onSearchPressed: () {
+                  setState(() {
+                    _isSearchBarVisible = !_isSearchBarVisible;
+                  });
+                },
+                searchHintText: 'Search menu...',
               ),
-            ),
-          ],
+              // Food Details
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.asset(
+                        widget.image,
+                        width: MediaQuery.of(context).size.width * 0.9,
+                        height: 200,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    SizedBox(height: 12),
+                    Text(
+                      widget.name,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      widget.price,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                    ),
+                    SizedBox(height: 12),
+                    Text(
+                      "Ingredients: etc.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    ),
+                    SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/cart');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        minimumSize: Size(200, 48),
+                      ),
+                      child: Text(
+                        "Add to Cart",
+                        style: TextStyle(fontSize: 16, color: Colors.white),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: Colors.red,
+        unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
-            label: 'Cart',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Cart'),
           BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Like'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],
         onTap: (index) {
-          if (index == 0) Navigator.pushNamed(context, '/'); // Home
+          if (index == 0) Navigator.pushNamed(context, '/');
           if (index == 1) Navigator.pushNamed(context, '/cart');
           if (index == 2) print('Like tapped');
-          if (index == 3)
-            Navigator.pushNamed(context, '/login'); // Account → Login
+          if (index == 3) Navigator.pushNamed(context, '/login');
         },
       ),
     );
@@ -120,14 +134,14 @@ class _FoodDetailsScreenState extends State<FoodDetailsScreen> {
     String? searchHintText,
   }) {
     return Container(
-      padding: EdgeInsets.all(16.0),
+      padding: EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 12.0),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [Colors.red, Colors.redAccent],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
       ),
       child: Column(
         children: [
