@@ -15,53 +15,71 @@ class _AllOrdersScreenState extends State<AllOrdersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
+        child: Column(
           children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.red, Colors.redAccent],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  DrawerHeader(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.red, Colors.redAccent],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                    child: Text(
+                      'Admin Menu',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.list_alt, color: Colors.red),
+                    title: Text('All Orders'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.pushNamed(context, '/admin/orders');
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.add_circle, color: Colors.red),
+                    title: Text('Add Dish'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.pushNamed(context, '/admin/add');
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.kitchen, color: Colors.red),
+                    title: Text('Manage Ingredients'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.pushNamed(context, '/admin/ingredients');
+                    },
+                  ),
+                ],
               ),
-              child: Text(
-                'Admin Menu',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
             ),
+
+            // Bottom-fixed Admin Dashboard option
+            Divider(),
             ListTile(
-              leading: Icon(Icons.list_alt, color: Colors.red),
-              title: Text('All Orders'),
+              leading: Icon(Icons.admin_panel_settings, color: Colors.red),
+              title: Text('Admin Dashboard'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushNamed(context, '/admin/orders');
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.add_circle, color: Colors.red),
-              title: Text('Add Dish'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/admin/add');
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.kitchen, color: Colors.red),
-              title: Text('Manage Ingredients'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/admin/ingredients');
+                Navigator.pushNamed(context, '/admin/dashboard');
               },
             ),
           ],
         ),
       ),
+
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -76,7 +94,9 @@ class _AllOrdersScreenState extends State<AllOrdersScreen> {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
+                  borderRadius: BorderRadius.vertical(
+                    bottom: Radius.circular(16),
+                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -86,7 +106,11 @@ class _AllOrdersScreenState extends State<AllOrdersScreen> {
                         Builder(
                           builder: (BuildContext context) {
                             return IconButton(
-                              icon: Icon(Icons.menu, color: Colors.white, size: 20),
+                              icon: Icon(
+                                Icons.menu,
+                                color: Colors.white,
+                                size: 20,
+                              ),
                               onPressed: () {
                                 Scaffold.of(context).openDrawer();
                               },
@@ -129,7 +153,9 @@ class _AllOrdersScreenState extends State<AllOrdersScreen> {
                         ElevatedButton(
                           onPressed: () {},
                           child: Text('PDF'),
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                          ),
                         ),
                       ],
                     ),
@@ -143,7 +169,10 @@ class _AllOrdersScreenState extends State<AllOrdersScreen> {
                   children: [
                     Text(
                       "Danh sách đơn hàng:",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     SizedBox(height: 8),
                     Table(
@@ -151,26 +180,74 @@ class _AllOrdersScreenState extends State<AllOrdersScreen> {
                       children: [
                         TableRow(
                           children: [
-                            Padding(padding: EdgeInsets.all(8.0), child: Text('ID', style: TextStyle(fontWeight: FontWeight.bold))),
-                            Padding(padding: EdgeInsets.all(8.0), child: Text("Tên hàng", style: TextStyle(fontWeight: FontWeight.bold))),
-                            Padding(padding: EdgeInsets.all(8.0), child: Text('From', style: TextStyle(fontWeight: FontWeight.bold))),
-                            Padding(padding: EdgeInsets.all(8.0), child: Text('Thao tác', style: TextStyle(fontWeight: FontWeight.bold))),
+                            Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text(
+                                'ID',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text(
+                                "Tên hàng",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text(
+                                'From',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text(
+                                'Thao tác',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
                           ],
                         ),
                         TableRow(
                           children: [
-                            Padding(padding: EdgeInsets.all(8.0), child: Text('1')),
-                            Padding(padding: EdgeInsets.all(8.0), child: Text('Pizza...')),
-                            Padding(padding: EdgeInsets.all(8.0), child: Text('AB')),
-                            Padding(padding: EdgeInsets.all(8.0), child: Icon(Icons.edit)),
+                            Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text('1'),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text('Pizza...'),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text('AB'),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Icon(Icons.edit),
+                            ),
                           ],
                         ),
                         TableRow(
                           children: [
-                            Padding(padding: EdgeInsets.all(8.0), child: Text('2')),
-                            Padding(padding: EdgeInsets.all(8.0), child: Text('etc')),
-                            Padding(padding: EdgeInsets.all(8.0), child: Text('el')),
-                            Padding(padding: EdgeInsets.all(8.0), child: Icon(Icons.edit)),
+                            Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text('2'),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text('etc'),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text('el'),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Icon(Icons.edit),
+                            ),
                           ],
                         ),
                       ],
@@ -187,7 +264,10 @@ class _AllOrdersScreenState extends State<AllOrdersScreen> {
         unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Cart'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_cart),
+            label: 'Cart',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Like'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],
@@ -197,7 +277,7 @@ class _AllOrdersScreenState extends State<AllOrdersScreen> {
           if (index == 2) print('Like tapped');
           if (index == 3) Navigator.pushNamed(context, '/login');
         },
-      )
+      ),
     );
   }
 }
