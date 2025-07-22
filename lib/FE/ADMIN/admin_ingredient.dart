@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fe_mobile_flutter/data/ingredient_storage.dart';// Adjust import based on your structure
 
 class ManageIngredientsScreen extends StatefulWidget {
   const ManageIngredientsScreen({super.key});
@@ -10,10 +11,91 @@ class ManageIngredientsScreen extends StatefulWidget {
 class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
   final _nameController = TextEditingController();
   final _idController = TextEditingController();
-  final List<Map<String, String>> ingredients = [
+  List<Map<String, String>> ingredients = [
     {"id": "1", "name": "Tomato"},
     {"id": "2", "name": "Onion"},
   ];
+  bool _isEditing = false;
+  String? _editingId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadIngredients();
+  }
+
+  // Load ingredients from JSON file
+  Future<void> _loadIngredients() async {
+    final ingredientsData = await IngredientRepository.loadIngredients();
+    setState(() {
+      ingredients = ingredientsData;
+    });
+  }
+
+  // Handle adding or updating an ingredient
+  Future<void> _addOrUpdateIngredient() async {
+    final name = _nameController.text.trim();
+
+    // Basic validation
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please fill in the ingredient name')),
+      );
+      return;
+    }
+
+    setState(() {
+      if (_isEditing && _editingId != null) {
+        // Update existing ingredient
+        final index = ingredients.indexWhere((ingredient) => ingredient['id'] == _editingId);
+        if (index != -1) {
+          ingredients[index] = {
+            'id': _editingId!,
+            'name': name,
+          };
+        }
+        _isEditing = false;
+        _editingId = null;
+      } else {
+        // Add new ingredient
+        final newId = (ingredients.length + 1).toString();
+        ingredients.add({
+          'id': newId,
+          'name': name,
+        });
+      }
+      // Clear form
+      _nameController.clear();
+      _idController.clear();
+    });
+
+    // Save to JSON
+    await IngredientRepository.saveIngredients(ingredients);
+  }
+
+  // Handle edit button click
+  void _editIngredient(String id) {
+    final ingredient = ingredients.firstWhere((ingredient) => ingredient['id'] == id);
+    setState(() {
+      _nameController.text = ingredient['name']!;
+      _idController.text = ingredient['id']!; // Optional, for display only
+      _isEditing = true;
+      _editingId = id;
+    });
+  }
+
+  // Handle delete button click
+  Future<void> _deleteIngredient(String id) async {
+    setState(() {
+      ingredients.removeWhere((ingredient) => ingredient['id'] == id);
+    });
+    // Save updated list to JSON
+    await IngredientRepository.saveIngredients(ingredients);
+    // Show confirmation
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Ingredient deleted successfully')),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -98,7 +180,7 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
                           },
                         ),
                         Text(
-                          'Quản lý nguyên liệu',
+                          _isEditing ? 'Edit Ingredient' : 'Quản lý nguyên liệu',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -123,11 +205,12 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
                     TextField(
                       controller: _idController,
                       decoration: InputDecoration(labelText: 'Ingredient ID:'),
+                      enabled: false, // Disabled since ID is auto-generated
                     ),
                     SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: () {},
-                      child: Text('Add'),
+                      onPressed: _addOrUpdateIngredient,
+                      child: Text(_isEditing ? 'Update' : 'Add'),
                       style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                     ),
                   ],
@@ -145,6 +228,11 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
                     SizedBox(height: 8),
                     Table(
                       border: TableBorder.all(color: Colors.grey),
+                      columnWidths: {
+                        0: FlexColumnWidth(1),
+                        1: FlexColumnWidth(2),
+                        2: FlexColumnWidth(1),
+                      },
                       children: [
                         TableRow(
                           children: [
@@ -157,7 +245,22 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
                           children: [
                             Padding(padding: EdgeInsets.all(8.0), child: Text(ingredient['id']!)),
                             Padding(padding: EdgeInsets.all(8.0), child: Text(ingredient['name']!)),
-                            Padding(padding: EdgeInsets.all(8.0), child: Icon(Icons.edit)),
+                            Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: Icon(Icons.edit),
+                                    onPressed: () => _editIngredient(ingredient['id']!),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.delete, color: Colors.red),
+                                    onPressed: () => _deleteIngredient(ingredient['id']!),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ],
                         )).toList(),
                       ],
@@ -184,7 +287,7 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
           if (index == 2) print('Like tapped');
           if (index == 3) Navigator.pushNamed(context, '/login');
         },
-      )
+      ),
     );
   }
 }

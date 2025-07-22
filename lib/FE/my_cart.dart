@@ -1,13 +1,33 @@
 import 'package:flutter/material.dart';
 
-class MyCart extends StatelessWidget {
+class MyCart extends StatefulWidget {
   const MyCart({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final String foodName = "Spaghetti + Meat + Tomato Sauce";
-    final double price = 5.99;
+  _MyCartState createState() => _MyCartState();
+}
 
+class _MyCartState extends State<MyCart> {
+  final String foodName = "Spaghetti + Meat + Tomato Sauce";
+  final double price = 5.99;
+  int quantity = 1;
+
+  void _incrementQuantity() {
+    setState(() {
+      quantity++;
+    });
+  }
+
+  void _decrementQuantity() {
+    if (quantity > 1) {
+      setState(() {
+        quantity--;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text("Your Cart"),
@@ -46,12 +66,12 @@ class MyCart extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          onPressed: () {},
+                          onPressed: _decrementQuantity,
                           icon: Icon(Icons.remove, color: Colors.red),
                         ),
-                        Text("1", style: TextStyle(fontSize: 16)),
+                        Text("$quantity", style: TextStyle(fontSize: 16)),
                         IconButton(
-                          onPressed: () {},
+                          onPressed: _incrementQuantity,
                           icon: Icon(Icons.add, color: Colors.red),
                         ),
                       ],
@@ -60,7 +80,7 @@ class MyCart extends StatelessWidget {
                 ),
                 SizedBox(height: 20),
                 Text(
-                  "Total: \$${price.toStringAsFixed(2)}",
+                  "Total: \$${ (price * quantity).toStringAsFixed(2)}",
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -99,7 +119,7 @@ class MyCart extends StatelessWidget {
                                 'name': 'Spaghetti',
                                 'ingredients': 'Spaghetti + Meat + Tomato Sauce',
                                 'price': 5.99,
-                                'quantity': 1,
+                                'quantity': quantity,
                                 'image': 'https://via.placeholder.com/50',
                               },
                             ],
@@ -127,7 +147,7 @@ class MyCart extends StatelessWidget {
       ),
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: Colors.red,
-        unselectedItemColor: Colors.grey,
+        unselectedItemColor: Color(0xFFB0BEC5),
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Cart'),

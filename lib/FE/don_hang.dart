@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fe_mobile_flutter/FE/auth_status.dart';
 
-
 void main() {
   runApp(MyOrderApp());
 }
@@ -24,9 +23,15 @@ class OrderPage extends StatelessWidget {
           title: Text('Đơn hàng', style: TextStyle(color: Colors.white)),
           backgroundColor: Colors.red,
           actions: [
-            IconButton(
-              icon: Icon(Icons.menu, color: Colors.white),
-              onPressed: () {},
+            Builder(
+              builder: (BuildContext context) {
+                return IconButton(
+                  icon: Icon(Icons.menu, color: Colors.white),
+                  onPressed: () {
+                    Scaffold.of(context).openDrawer();
+                  },
+                );
+              },
             ),
           ],
           bottom: TabBar(
@@ -38,6 +43,88 @@ class OrderPage extends StatelessWidget {
             indicatorColor: Colors.white,
             labelColor: Colors.white,
             unselectedLabelColor: Colors.white70,
+          ),
+        ),
+        drawer: Drawer(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              DrawerHeader(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.red, Colors.redAccent],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: Text(
+                  'Menu',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: Icon(Icons.home, color: Colors.red),
+                title: Text('Home'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/');
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.shopping_cart, color: Colors.red),
+                title: Text('Cart'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/cart');
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.favorite, color: Colors.red),
+                title: Text('Favorites'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/favorites');
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.person, color: Colors.red),
+                title: Text('Account'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/login');
+                },
+              ),
+              if (isLoggedIn) ...[
+                ListTile(
+                  leading: Icon(Icons.list_alt, color: Colors.red),
+                  title: Text('All Orders'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/admin/orders');
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.add_circle, color: Colors.red),
+                  title: Text('Add Dish'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/admin/add');
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.kitchen, color: Colors.red),
+                  title: Text('Manage Ingredients'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/admin/ingredients');
+                  },
+                ),
+              ],
+            ],
           ),
         ),
         body: TabBarView(

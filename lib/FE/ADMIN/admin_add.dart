@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:convert';
+import 'dart:io';
+import 'package:fe_mobile_flutter/data/dish_storage.dart';
 
 class AdminAddDishScreen extends StatefulWidget {
   const AdminAddDishScreen({super.key});
@@ -11,10 +15,105 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
   final _imgUrlController = TextEditingController();
-  final List<Map<String, String>> dishes = [
-    {"id": "1", "name": "Dish 1", "image": "/assets/burger.jpg"},
-    {"id": "2", "name": "Dish 2", "image": "/assets/burger.jpg"},
+  List<Map<String, String>> dishes = [
+    {"id": "1", "name": "Dish 1", "image": "/assets/burger.jpg", "price": "10.99"},
+    {"id": "2", "name": "Dish 2", "image": "/assets/burger.jpg", "price": "12.99"},
   ];
+  bool _isEditing = false;
+  String? _editingId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDishes();
+  }
+
+  // Load dishes from JSON file
+  Future<void> _loadDishes() async {
+    final dishesData = await DishRepository.loadDishes();
+    setState(() {
+      dishes = dishesData;
+    });
+  }
+
+  // Handle adding or updating a dish
+  Future<void> _addOrUpdateDish() async {
+    final name = _nameController.text.trim();
+    final price = _priceController.text.trim();
+    final imgUrl = _imgUrlController.text.trim();
+
+    // Basic validation
+    if (name.isEmpty || price.isEmpty || imgUrl.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please fill in all fields')),
+      );
+      return;
+    }
+    if (double.tryParse(price) == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Price must be a valid number')),
+      );
+      return;
+    }
+
+    setState(() {
+      if (_isEditing && _editingId != null) {
+        // Update existing dish
+        final index = dishes.indexWhere((dish) => dish['id'] == _editingId);
+        if (index != -1) {
+          dishes[index] = {
+            'id': _editingId!,
+            'name': name,
+            'price': price,
+            'image': imgUrl,
+          };
+        }
+        _isEditing = false;
+        _editingId = null;
+      } else {
+        // Add new dish
+        final newId = (dishes.length + 1).toString();
+        dishes.add({
+          'id': newId,
+          'name': name,
+          'price': price,
+          'image': imgUrl,
+        });
+      }
+      // Clear form
+      _nameController.clear();
+      _priceController.clear();
+      _imgUrlController.clear();
+    });
+
+    // Save to JSON
+    await DishRepository.saveDishes(dishes);
+  }
+
+  // Handle edit button click
+  void _editDish(String id) {
+    final dish = dishes.firstWhere((dish) => dish['id'] == id);
+    setState(() {
+      _nameController.text = dish['name']!;
+      _priceController.text = dish['price']!;
+      _imgUrlController.text = dish['image']!;
+      _isEditing = true;
+      _editingId = id;
+    });
+  }
+
+  // Handle delete button click
+  Future<void> _deleteDish(String id) async {
+    setState(() {
+      dishes.removeWhere((dish) => dish['id'] == id);
+    });
+    // Save updated list to JSON
+    await DishRepository.saveDishes(dishes);
+    // Show confirmation
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Dish deleted successfully')),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +198,7 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                           },
                         ),
                         Text(
-                          'Add Dish',
+                          _isEditing ? 'Edit Dish' : 'Add Dish',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -131,8 +230,8 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                     ),
                     SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: () {},
-                      child: Text('Add'),
+                      onPressed: _addOrUpdateDish,
+                      child: Text(_isEditing ? 'Update' : 'Add'),
                       style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                     ),
                   ],
@@ -162,7 +261,22 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                           children: [
                             Padding(padding: EdgeInsets.all(8.0), child: Text(dish['id']!)),
                             Padding(padding: EdgeInsets.all(8.0), child: Text(dish['name']!)),
-                            Padding(padding: EdgeInsets.all(8.0), child: Icon(Icons.edit)),
+                            Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: Icon(Icons.edit),
+                                    onPressed: () => _editDish(dish['id']!),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.delete, color: Colors.red),
+                                    onPressed: () => _deleteDish(dish['id']!),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ],
                         )).toList(),
                       ],

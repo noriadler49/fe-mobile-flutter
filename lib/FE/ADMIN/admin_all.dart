@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fe_mobile_flutter/data/order_storage.dart'; // Adjust import based on your structure
 
 class AllOrdersScreen extends StatefulWidget {
   const AllOrdersScreen({super.key});
@@ -10,6 +11,96 @@ class AllOrdersScreen extends StatefulWidget {
 class _AllOrdersScreenState extends State<AllOrdersScreen> {
   final _fromController = TextEditingController();
   final _dateController = TextEditingController();
+  List<Map<String, String>> orders = [
+    {"id": "1", "itemName": "Pizza", "from": "AB", "date": "2025-07-20"},
+    {"id": "2", "itemName": "Burger", "from": "EL", "date": "2025-07-21"},
+  ];
+  bool _isEditing = false;
+  String? _editingId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOrders();
+  }
+
+  // Load orders from JSON file
+  Future<void> _loadOrders() async {
+    final ordersData = await OrderRepository.loadOrders();
+    setState(() {
+      orders = ordersData;
+    });
+  }
+
+  // Handle adding or updating an order
+  Future<void> _addOrUpdateOrder() async {
+    final from = _fromController.text.trim();
+    final date = _dateController.text.trim();
+
+    // Basic validation
+    if (from.isEmpty || date.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please fill in all fields')),
+      );
+      return;
+    }
+
+    setState(() {
+      if (_isEditing && _editingId != null) {
+        // Update existing order
+        final index = orders.indexWhere((order) => order['id'] == _editingId);
+        if (index != -1) {
+          orders[index] = {
+            'id': _editingId!,
+            'itemName': orders[index]['itemName']!, // Keep itemName unchanged
+            'from': from,
+            'date': date,
+          };
+        }
+        _isEditing = false;
+        _editingId = null;
+      } else {
+        // Add new order
+        final newId = (orders.length + 1).toString();
+        orders.add({
+          'id': newId,
+          'itemName': 'New Order', // Default itemName, editable elsewhere
+          'from': from,
+          'date': date,
+        });
+      }
+      // Clear form
+      _fromController.clear();
+      _dateController.clear();
+    });
+
+    // Save to JSON
+    await OrderRepository.saveOrders(orders);
+  }
+
+  // Handle edit button click
+  void _editOrder(String id) {
+    final order = orders.firstWhere((order) => order['id'] == id);
+    setState(() {
+      _fromController.text = order['from']!;
+      _dateController.text = order['date']!;
+      _isEditing = true;
+      _editingId = id;
+    });
+  }
+
+  // Handle delete button click
+  Future<void> _deleteOrder(String id) async {
+    setState(() {
+      orders.removeWhere((order) => order['id'] == id);
+    });
+    // Save updated list to JSON
+    await OrderRepository.saveOrders(orders);
+    // Show confirmation
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Order deleted successfully')),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +185,7 @@ class _AllOrdersScreenState extends State<AllOrdersScreen> {
                           },
                         ),
                         Text(
-                          'Tất cả đơn hàng',
+                          _isEditing ? 'Edit Order' : 'Tất cả đơn hàng',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -126,12 +217,13 @@ class _AllOrdersScreenState extends State<AllOrdersScreen> {
                             decoration: InputDecoration(labelText: 'Date'),
                           ),
                         ),
-                        ElevatedButton(
-                          onPressed: () {},
-                          child: Text('PDF'),
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                        ),
                       ],
+                    ),
+                    SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: _addOrUpdateOrder,
+                      child: Text(_isEditing ? 'Update' : 'Add Order'),
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                     ),
                   ],
                 ),
@@ -148,6 +240,12 @@ class _AllOrdersScreenState extends State<AllOrdersScreen> {
                     SizedBox(height: 8),
                     Table(
                       border: TableBorder.all(color: Colors.grey),
+                      columnWidths: {
+                        0: FlexColumnWidth(1),
+                        1: FlexColumnWidth(2),
+                        2: FlexColumnWidth(1),
+                        3: FlexColumnWidth(1),
+                      },
                       children: [
                         TableRow(
                           children: [
@@ -157,22 +255,29 @@ class _AllOrdersScreenState extends State<AllOrdersScreen> {
                             Padding(padding: EdgeInsets.all(8.0), child: Text('Thao tác', style: TextStyle(fontWeight: FontWeight.bold))),
                           ],
                         ),
-                        TableRow(
+                        ...orders.map((order) => TableRow(
                           children: [
-                            Padding(padding: EdgeInsets.all(8.0), child: Text('1')),
-                            Padding(padding: EdgeInsets.all(8.0), child: Text('Pizza...')),
-                            Padding(padding: EdgeInsets.all(8.0), child: Text('AB')),
-                            Padding(padding: EdgeInsets.all(8.0), child: Icon(Icons.edit)),
+                            Padding(padding: EdgeInsets.all(8.0), child: Text(order['id']!)),
+                            Padding(padding: EdgeInsets.all(8.0), child: Text(order['itemName']!)),
+                            Padding(padding: EdgeInsets.all(8.0), child: Text(order['from']!)),
+                            Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: Icon(Icons.edit),
+                                    onPressed: () => _editOrder(order['id']!),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.delete, color: Colors.red),
+                                    onPressed: () => _deleteOrder(order['id']!),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ],
-                        ),
-                        TableRow(
-                          children: [
-                            Padding(padding: EdgeInsets.all(8.0), child: Text('2')),
-                            Padding(padding: EdgeInsets.all(8.0), child: Text('etc')),
-                            Padding(padding: EdgeInsets.all(8.0), child: Text('el')),
-                            Padding(padding: EdgeInsets.all(8.0), child: Icon(Icons.edit)),
-                          ],
-                        ),
+                        )).toList(),
                       ],
                     ),
                   ],
@@ -197,7 +302,7 @@ class _AllOrdersScreenState extends State<AllOrdersScreen> {
           if (index == 2) print('Like tapped');
           if (index == 3) Navigator.pushNamed(context, '/login');
         },
-      )
+      ),
     );
   }
 }
