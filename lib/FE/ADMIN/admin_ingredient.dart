@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:fe_mobile_flutter/data/ingredient_storage.dart';// Adjust import based on your structure
+import 'package:fe_mobile_flutter/data/ingredient_storage.dart'; // Adjust import based on your structure
 
 class ManageIngredientsScreen extends StatefulWidget {
   const ManageIngredientsScreen({super.key});

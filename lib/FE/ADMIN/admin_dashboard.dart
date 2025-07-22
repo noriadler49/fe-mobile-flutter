@@ -1,7 +1,9 @@
+// ignore_for_file: unused_import
+
 import 'package:flutter/material.dart';
-import 'admin_all.dart';
-import 'admin_add.dart';
-import 'admin_ingredient.dart';
+import 'package:fe_mobile_flutter/FE/ADMIN/admin_all.dart';
+import 'package:fe_mobile_flutter/FE/ADMIN/admin_add.dart';
+import 'package:fe_mobile_flutter/FE/ADMIN/admin_ingredient.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});
@@ -10,53 +12,71 @@ class AdminDashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
+        child: Column(
           children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.red, Colors.redAccent],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  DrawerHeader(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.red, Colors.redAccent],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                    child: Text(
+                      'Admin Menu',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.list_alt, color: Colors.red),
+                    title: Text('All Orders'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.pushNamed(context, '/admin/orders');
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.add_circle, color: Colors.red),
+                    title: Text('Add Dish'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.pushNamed(context, '/admin/add');
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.kitchen, color: Colors.red),
+                    title: Text('Manage Ingredients'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.pushNamed(context, '/admin/ingredients');
+                    },
+                  ),
+                ],
               ),
-              child: Text(
-                'Admin Menu',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
             ),
+
+            // Bottom-fixed Admin Dashboard option
+            Divider(),
             ListTile(
-              leading: Icon(Icons.list_alt, color: Colors.red),
-              title: Text('All Orders'),
+              leading: Icon(Icons.admin_panel_settings, color: Colors.red),
+              title: Text('Admin Dashboard'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushNamed(context, '/admin/orders');
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.add_circle, color: Colors.red),
-              title: Text('Add Dish'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/admin/add');
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.kitchen, color: Colors.red),
-              title: Text('Manage Ingredients'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/admin/ingredients');
+                Navigator.pushNamed(context, '/admin/dashboard');
               },
             ),
           ],
         ),
       ),
+
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -71,7 +91,9 @@ class AdminDashboardScreen extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
+                  borderRadius: BorderRadius.vertical(
+                    bottom: Radius.circular(16),
+                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -81,7 +103,11 @@ class AdminDashboardScreen extends StatelessWidget {
                         Builder(
                           builder: (BuildContext context) {
                             return IconButton(
-                              icon: Icon(Icons.menu, color: Colors.white, size: 20),
+                              icon: Icon(
+                                Icons.menu,
+                                color: Colors.white,
+                                size: 20,
+                              ),
                               onPressed: () {
                                 Scaffold.of(context).openDrawer();
                               },
@@ -134,7 +160,10 @@ class AdminDashboardScreen extends StatelessWidget {
               ),
               // Quick Access Buttons
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 8.0,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -151,19 +180,30 @@ class AdminDashboardScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         ElevatedButton(
-                          onPressed: () => Navigator.pushNamed(context, '/admin/orders'),
+                          onPressed: () =>
+                              Navigator.pushNamed(context, '/admin/orders'),
                           child: Text('View Orders'),
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                          ),
                         ),
                         ElevatedButton(
-                          onPressed: () => Navigator.pushNamed(context, '/admin/add'),
+                          onPressed: () =>
+                              Navigator.pushNamed(context, '/admin/add'),
                           child: Text('Add Dish'),
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                          ),
                         ),
                         ElevatedButton(
-                          onPressed: () => Navigator.pushNamed(context, '/admin/ingredients'),
+                          onPressed: () => Navigator.pushNamed(
+                            context,
+                            '/admin/ingredients',
+                          ),
                           child: Text('Manage Ingredients'),
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                          ),
                         ),
                       ],
                     ),
@@ -179,7 +219,10 @@ class AdminDashboardScreen extends StatelessWidget {
         unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Cart'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_cart),
+            label: 'Cart',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Like'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],
@@ -189,7 +232,7 @@ class AdminDashboardScreen extends StatelessWidget {
           if (index == 2) print('Like tapped');
           if (index == 3) Navigator.pushNamed(context, '/login');
         },
-      )
+      ),
     );
   }
 }

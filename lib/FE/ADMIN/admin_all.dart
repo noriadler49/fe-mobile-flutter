@@ -217,13 +217,12 @@ class _AllOrdersScreenState extends State<AllOrdersScreen> {
                             decoration: InputDecoration(labelText: 'Date'),
                           ),
                         ),
+                        ElevatedButton(
+                          onPressed: () {},
+                          child: Text('PDF'),
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                        ),
                       ],
-                    ),
-                    SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: _addOrUpdateOrder,
-                      child: Text(_isEditing ? 'Update' : 'Add Order'),
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                     ),
                   ],
                 ),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:convert';
 import 'dart:io';
-import 'package:fe_mobile_flutter/data/dish_storage.dart';
+import 'package:fe_mobile_flutter/data/dish_storage.dart'; // Adjust import based on your structure
 
 class AdminAddDishScreen extends StatefulWidget {
   const AdminAddDishScreen({super.key});
@@ -249,11 +249,18 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                     SizedBox(height: 8),
                     Table(
                       border: TableBorder.all(color: Colors.grey),
+                      columnWidths: {
+                        0: FlexColumnWidth(1),
+                        1: FlexColumnWidth(2),
+                        2: FlexColumnWidth(1),
+                        3: FlexColumnWidth(1),
+                      },
                       children: [
                         TableRow(
                           children: [
                             Padding(padding: EdgeInsets.all(8.0), child: Text('ID', style: TextStyle(fontWeight: FontWeight.bold))),
                             Padding(padding: EdgeInsets.all(8.0), child: Text("Dish's Name", style: TextStyle(fontWeight: FontWeight.bold))),
+                            Padding(padding: EdgeInsets.all(8.0), child: Text('Price', style: TextStyle(fontWeight: FontWeight.bold))),
                             Padding(padding: EdgeInsets.all(8.0), child: Text('Thao tác', style: TextStyle(fontWeight: FontWeight.bold))),
                           ],
                         ),
@@ -261,6 +268,7 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                           children: [
                             Padding(padding: EdgeInsets.all(8.0), child: Text(dish['id']!)),
                             Padding(padding: EdgeInsets.all(8.0), child: Text(dish['name']!)),
+                            Padding(padding: EdgeInsets.all(8.0), child: Text(dish['price']!)),
                             Padding(
                               padding: EdgeInsets.all(8.0),
                               child: Row(
