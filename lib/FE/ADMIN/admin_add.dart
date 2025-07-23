@@ -16,8 +16,18 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
   final _priceController = TextEditingController();
   final _imgUrlController = TextEditingController();
   List<Map<String, String>> dishes = [
-    {"id": "1", "name": "Dish 1", "image": "/assets/burger.jpg", "price": "10.99"},
-    {"id": "2", "name": "Dish 2", "image": "/assets/burger.jpg", "price": "12.99"},
+    {
+      "id": "1",
+      "name": "Dish 1",
+      "image": "/assets/burger.jpg",
+      "price": "10.99",
+    },
+    {
+      "id": "2",
+      "name": "Dish 2",
+      "image": "/assets/burger.jpg",
+      "price": "12.99",
+    },
   ];
   bool _isEditing = false;
   String? _editingId;
@@ -44,15 +54,15 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
 
     // Basic validation
     if (name.isEmpty || price.isEmpty || imgUrl.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please fill in all fields')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Please fill in all fields')));
       return;
     }
     if (double.tryParse(price) == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Price must be a valid number')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Price must be a valid number')));
       return;
     }
 
@@ -110,57 +120,74 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
     // Save updated list to JSON
     await DishRepository.saveDishes(dishes);
     // Show confirmation
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Dish deleted successfully')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Dish deleted successfully')));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
+        child: Column(
           children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.red, Colors.redAccent],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  DrawerHeader(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.red, Colors.redAccent],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                    child: Text(
+                      'Admin Menu',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.list_alt, color: Colors.red),
+                    title: Text('All Orders'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.pushNamed(context, '/admin/orders');
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.add_circle, color: Colors.red),
+                    title: Text('Add Dish'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.pushNamed(context, '/admin/add');
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.kitchen, color: Colors.red),
+                    title: Text('Manage Ingredients'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.pushNamed(context, '/admin/ingredients');
+                    },
+                  ),
+                ],
               ),
-              child: Text(
-                'Admin Menu',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
             ),
+
+            // Bottom-fixed Admin Dashboard option
+            Divider(),
             ListTile(
-              leading: Icon(Icons.list_alt, color: Colors.red),
-              title: Text('All Orders'),
+              leading: Icon(Icons.admin_panel_settings, color: Colors.red),
+              title: Text('Admin Dashboard'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushNamed(context, '/admin/orders');
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.add_circle, color: Colors.red),
-              title: Text('Add Dish'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/admin/add');
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.kitchen, color: Colors.red),
-              title: Text('Manage Ingredients'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/admin/ingredients');
+                Navigator.pushNamed(context, '/admin/dashboard');
               },
             ),
           ],
@@ -180,7 +207,9 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
+                  borderRadius: BorderRadius.vertical(
+                    bottom: Radius.circular(16),
+                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -190,7 +219,11 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                         Builder(
                           builder: (BuildContext context) {
                             return IconButton(
-                              icon: Icon(Icons.menu, color: Colors.white, size: 20),
+                              icon: Icon(
+                                Icons.menu,
+                                color: Colors.white,
+                                size: 20,
+                              ),
                               onPressed: () {
                                 Scaffold.of(context).openDrawer();
                               },
@@ -232,7 +265,9 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                     ElevatedButton(
                       onPressed: _addOrUpdateDish,
                       child: Text(_isEditing ? 'Update' : 'Add'),
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                      ),
                     ),
                   ],
                 ),
@@ -244,7 +279,10 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                   children: [
                     Text(
                       "Dish Available:",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     SizedBox(height: 8),
                     Table(
@@ -258,35 +296,77 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                       children: [
                         TableRow(
                           children: [
-                            Padding(padding: EdgeInsets.all(8.0), child: Text('ID', style: TextStyle(fontWeight: FontWeight.bold))),
-                            Padding(padding: EdgeInsets.all(8.0), child: Text("Dish's Name", style: TextStyle(fontWeight: FontWeight.bold))),
-                            Padding(padding: EdgeInsets.all(8.0), child: Text('Price', style: TextStyle(fontWeight: FontWeight.bold))),
-                            Padding(padding: EdgeInsets.all(8.0), child: Text('Thao tác', style: TextStyle(fontWeight: FontWeight.bold))),
-                          ],
-                        ),
-                        ...dishes.map((dish) => TableRow(
-                          children: [
-                            Padding(padding: EdgeInsets.all(8.0), child: Text(dish['id']!)),
-                            Padding(padding: EdgeInsets.all(8.0), child: Text(dish['name']!)),
-                            Padding(padding: EdgeInsets.all(8.0), child: Text(dish['price']!)),
                             Padding(
                               padding: EdgeInsets.all(8.0),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: Icon(Icons.edit),
-                                    onPressed: () => _editDish(dish['id']!),
-                                  ),
-                                  IconButton(
-                                    icon: Icon(Icons.delete, color: Colors.red),
-                                    onPressed: () => _deleteDish(dish['id']!),
-                                  ),
-                                ],
+                              child: Text(
+                                'ID',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text(
+                                "Dish's Name",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text(
+                                'Price',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text(
+                                'Thao tác',
+                                style: TextStyle(fontWeight: FontWeight.bold),
                               ),
                             ),
                           ],
-                        )).toList(),
+                        ),
+                        ...dishes
+                            .map(
+                              (dish) => TableRow(
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Text(dish['id']!),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Text(dish['name']!),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Text(dish['price']!),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          icon: Icon(Icons.edit),
+                                          onPressed: () =>
+                                              _editDish(dish['id']!),
+                                        ),
+                                        IconButton(
+                                          icon: Icon(
+                                            Icons.delete,
+                                            color: Colors.red,
+                                          ),
+                                          onPressed: () =>
+                                              _deleteDish(dish['id']!),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                            .toList(),
                       ],
                     ),
                   ],
@@ -301,7 +381,10 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
         unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Cart'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_cart),
+            label: 'Cart',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Like'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],

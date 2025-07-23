@@ -70,7 +70,7 @@ class AdminDashboardScreen extends StatelessWidget {
               title: Text('Admin Dashboard'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushNamed(context, '/admin/dashboard');
+                Navigator.pushNamed(context, '');
               },
             ),
           ],

@@ -39,9 +39,9 @@ class _AllOrdersScreenState extends State<AllOrdersScreen> {
 
     // Basic validation
     if (from.isEmpty || date.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please fill in all fields')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Please fill in all fields')));
       return;
     }
 
@@ -97,57 +97,74 @@ class _AllOrdersScreenState extends State<AllOrdersScreen> {
     // Save updated list to JSON
     await OrderRepository.saveOrders(orders);
     // Show confirmation
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Order deleted successfully')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Order deleted successfully')));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
+        child: Column(
           children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.red, Colors.redAccent],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  DrawerHeader(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.red, Colors.redAccent],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                    child: Text(
+                      'Admin Menu',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.list_alt, color: Colors.red),
+                    title: Text('All Orders'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.pushNamed(context, '/admin/orders');
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.add_circle, color: Colors.red),
+                    title: Text('Add Dish'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.pushNamed(context, '/admin/add');
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.kitchen, color: Colors.red),
+                    title: Text('Manage Ingredients'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.pushNamed(context, '/admin/ingredients');
+                    },
+                  ),
+                ],
               ),
-              child: Text(
-                'Admin Menu',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
             ),
+
+            // Bottom-fixed Admin Dashboard option
+            Divider(),
             ListTile(
-              leading: Icon(Icons.list_alt, color: Colors.red),
-              title: Text('All Orders'),
+              leading: Icon(Icons.admin_panel_settings, color: Colors.red),
+              title: Text('Admin Dashboard'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushNamed(context, '/admin/orders');
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.add_circle, color: Colors.red),
-              title: Text('Add Dish'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/admin/add');
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.kitchen, color: Colors.red),
-              title: Text('Manage Ingredients'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/admin/ingredients');
+                Navigator.pushNamed(context, '/admin/dashboard');
               },
             ),
           ],
@@ -167,7 +184,9 @@ class _AllOrdersScreenState extends State<AllOrdersScreen> {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
+                  borderRadius: BorderRadius.vertical(
+                    bottom: Radius.circular(16),
+                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -177,7 +196,11 @@ class _AllOrdersScreenState extends State<AllOrdersScreen> {
                         Builder(
                           builder: (BuildContext context) {
                             return IconButton(
-                              icon: Icon(Icons.menu, color: Colors.white, size: 20),
+                              icon: Icon(
+                                Icons.menu,
+                                color: Colors.white,
+                                size: 20,
+                              ),
                               onPressed: () {
                                 Scaffold.of(context).openDrawer();
                               },
@@ -220,7 +243,9 @@ class _AllOrdersScreenState extends State<AllOrdersScreen> {
                         ElevatedButton(
                           onPressed: () {},
                           child: Text('PDF'),
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                          ),
                         ),
                       ],
                     ),
@@ -234,7 +259,10 @@ class _AllOrdersScreenState extends State<AllOrdersScreen> {
                   children: [
                     Text(
                       "Danh sách đơn hàng:",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     SizedBox(height: 8),
                     Table(
@@ -248,35 +276,77 @@ class _AllOrdersScreenState extends State<AllOrdersScreen> {
                       children: [
                         TableRow(
                           children: [
-                            Padding(padding: EdgeInsets.all(8.0), child: Text('ID', style: TextStyle(fontWeight: FontWeight.bold))),
-                            Padding(padding: EdgeInsets.all(8.0), child: Text("Tên hàng", style: TextStyle(fontWeight: FontWeight.bold))),
-                            Padding(padding: EdgeInsets.all(8.0), child: Text('From', style: TextStyle(fontWeight: FontWeight.bold))),
-                            Padding(padding: EdgeInsets.all(8.0), child: Text('Thao tác', style: TextStyle(fontWeight: FontWeight.bold))),
-                          ],
-                        ),
-                        ...orders.map((order) => TableRow(
-                          children: [
-                            Padding(padding: EdgeInsets.all(8.0), child: Text(order['id']!)),
-                            Padding(padding: EdgeInsets.all(8.0), child: Text(order['itemName']!)),
-                            Padding(padding: EdgeInsets.all(8.0), child: Text(order['from']!)),
                             Padding(
                               padding: EdgeInsets.all(8.0),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: Icon(Icons.edit),
-                                    onPressed: () => _editOrder(order['id']!),
-                                  ),
-                                  IconButton(
-                                    icon: Icon(Icons.delete, color: Colors.red),
-                                    onPressed: () => _deleteOrder(order['id']!),
-                                  ),
-                                ],
+                              child: Text(
+                                'ID',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text(
+                                "Tên hàng",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text(
+                                'From',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text(
+                                'Thao tác',
+                                style: TextStyle(fontWeight: FontWeight.bold),
                               ),
                             ),
                           ],
-                        )).toList(),
+                        ),
+                        ...orders
+                            .map(
+                              (order) => TableRow(
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Text(order['id']!),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Text(order['itemName']!),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Text(order['from']!),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          icon: Icon(Icons.edit),
+                                          onPressed: () =>
+                                              _editOrder(order['id']!),
+                                        ),
+                                        IconButton(
+                                          icon: Icon(
+                                            Icons.delete,
+                                            color: Colors.red,
+                                          ),
+                                          onPressed: () =>
+                                              _deleteOrder(order['id']!),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                            .toList(),
                       ],
                     ),
                   ],
@@ -291,7 +361,10 @@ class _AllOrdersScreenState extends State<AllOrdersScreen> {
         unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Cart'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_cart),
+            label: 'Cart',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Like'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],
