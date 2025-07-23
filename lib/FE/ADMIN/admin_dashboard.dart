@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:fe_mobile_flutter/FE/ADMIN/admin_all.dart';
 import 'package:fe_mobile_flutter/FE/ADMIN/admin_add.dart';
 import 'package:fe_mobile_flutter/FE/ADMIN/admin_ingredient.dart';
+import 'package:fe_mobile_flutter/FE/auth_status.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});
@@ -230,7 +231,13 @@ class AdminDashboardScreen extends StatelessWidget {
           if (index == 0) Navigator.pushNamed(context, '/');
           if (index == 1) Navigator.pushNamed(context, '/cart');
           if (index == 2) print('Like tapped');
-          if (index == 3) Navigator.pushNamed(context, '/login');
+                    if (index == 3) {
+            if (isLoggedIn) {
+              Navigator.pushNamed(context, '/userProfile');
+            } else {
+              Navigator.pushNamed(context, '/login');
+            }
+          }
         },
       ),
     );

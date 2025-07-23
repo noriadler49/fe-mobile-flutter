@@ -3,6 +3,7 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:fe_mobile_flutter/data/dish_storage.dart'; // Adjust import based on your structure
+import 'package:fe_mobile_flutter/FE/auth_status.dart';
 
 class AdminAddDishScreen extends StatefulWidget {
   const AdminAddDishScreen({super.key});
@@ -392,7 +393,13 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
           if (index == 0) Navigator.pushNamed(context, '/');
           if (index == 1) Navigator.pushNamed(context, '/cart');
           if (index == 2) print('Like tapped');
-          if (index == 3) Navigator.pushNamed(context, '/login');
+                    if (index == 3) {
+            if (isLoggedIn) {
+              Navigator.pushNamed(context, '/userProfile');
+            } else {
+              Navigator.pushNamed(context, '/login');
+            }
+          }
         },
       ),
     );

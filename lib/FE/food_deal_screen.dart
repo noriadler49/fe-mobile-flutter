@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fe_mobile_flutter/FE/auth_status.dart';
 
 class FoodDealScreen extends StatefulWidget {
   FoodDealScreen({super.key});
@@ -152,8 +153,13 @@ class _FoodDealScreenState extends State<FoodDealScreen> {
           if (index == 0) Navigator.pushNamed(context, '/'); // Home
           if (index == 1) Navigator.pushNamed(context, '/cart');
           if (index == 2) print('Like tapped');
-          if (index == 3)
-            Navigator.pushNamed(context, '/login'); // Account → Login
+                    if (index == 3) {
+            if (isLoggedIn) {
+              Navigator.pushNamed(context, '/userProfile');
+            } else {
+              Navigator.pushNamed(context, '/login');
+            }
+          }
         },
       ),
     );

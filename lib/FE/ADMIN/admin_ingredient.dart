@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fe_mobile_flutter/data/ingredient_storage.dart'; // Adjust import based on your structure
-
+import 'package:fe_mobile_flutter/FE/auth_status.dart';
 class ManageIngredientsScreen extends StatefulWidget {
   const ManageIngredientsScreen({super.key});
 
@@ -354,7 +354,13 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
           if (index == 0) Navigator.pushNamed(context, '/');
           if (index == 1) Navigator.pushNamed(context, '/cart');
           if (index == 2) print('Like tapped');
-          if (index == 3) Navigator.pushNamed(context, '/login');
+          if (index == 3) {
+            if (isLoggedIn) {
+              Navigator.pushNamed(context, '/userProfile');
+            } else {
+              Navigator.pushNamed(context, '/login');
+            }
+          }
         },
       ),
     );
