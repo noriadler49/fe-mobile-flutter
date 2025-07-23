@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fe_mobile_flutter/FE/auth_status.dart';
 
 class FoodDetailsScreen extends StatefulWidget {
   final String name;
@@ -30,7 +31,11 @@ class _FoodDetailsScreenState extends State<FoodDetailsScreen> {
                 title: 'MENU',
                 rightIcons: [
                   IconButton(
-                    icon: Icon(Icons.shopping_cart, color: Colors.white, size: 20),
+                    icon: Icon(
+                      Icons.shopping_cart,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                     onPressed: () {
                       Navigator.pushNamed(context, '/cart');
                     },
@@ -52,7 +57,10 @@ class _FoodDetailsScreenState extends State<FoodDetailsScreen> {
               ),
               // Food Details
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 12.0,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -69,7 +77,10 @@ class _FoodDetailsScreenState extends State<FoodDetailsScreen> {
                     Text(
                       widget.name,
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     SizedBox(height: 8),
                     Text(
@@ -112,7 +123,10 @@ class _FoodDetailsScreenState extends State<FoodDetailsScreen> {
         unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Cart'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_cart),
+            label: 'Cart',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Like'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],
@@ -120,7 +134,14 @@ class _FoodDetailsScreenState extends State<FoodDetailsScreen> {
           if (index == 0) Navigator.pushNamed(context, '/');
           if (index == 1) Navigator.pushNamed(context, '/cart');
           if (index == 2) print('Like tapped');
-          if (index == 3) Navigator.pushNamed(context, '/login');
+          if (index == 3) {
+            if (isLoggedIn) {
+              Navigator.pushNamed(context, '/userProfile');
+            } else {
+              Navigator.pushNamed(context, '/login');
+            }
+          }
+          ;
         },
       ),
     );

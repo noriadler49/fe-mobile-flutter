@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fe_mobile_flutter/data/ingredient_storage.dart'; // Adjust import based on your structure
+import 'package:fe_mobile_flutter/fe/admin/admin_search_button.dart';
+import 'package:fe_mobile_flutter/FE/auth_status.dart';
 
 class ManageIngredientsScreen extends StatefulWidget {
   const ManageIngredientsScreen({super.key});
@@ -16,6 +18,7 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
     {"id": "1", "name": "Tomato"},
     {"id": "2", "name": "Onion"},
   ];
+  List<Map<String, String>> allIngredients = [];
   bool _isEditing = false;
   String? _editingId;
 
@@ -30,6 +33,7 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
     final ingredientsData = await IngredientRepository.loadIngredients();
     setState(() {
       ingredients = ingredientsData;
+      allIngredients = ingredientsData;
     });
   }
 
@@ -260,7 +264,7 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
                     Table(
                       border: TableBorder.all(color: Colors.grey),
                       columnWidths: {
-                        0: FlexColumnWidth(1),
+                        0: FlexColumnWidth(0.5),
                         1: FlexColumnWidth(2),
                         2: FlexColumnWidth(1),
                       },
@@ -276,11 +280,26 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
                             ),
                             Padding(
                               padding: EdgeInsets.all(8.0),
-                              child: Text(
-                                "Ingredient Name",
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                              child: FilterButtonWithPopup(
+                                label: 'Ingredient Name',
+                                onSearch: (value) async {
+                                  if (value.isEmpty) {
+                                    await _loadIngredients(); // Reload from file when cleared
+                                  } else {
+                                    setState(() {
+                                      ingredients = allIngredients
+                                          .where(
+                                            (ingredient) => ingredient['name']!
+                                                .toLowerCase()
+                                                .contains(value.toLowerCase()),
+                                          )
+                                          .toList();
+                                    });
+                                  }
+                                },
                               ),
                             ),
+
                             Padding(
                               padding: EdgeInsets.all(8.0),
                               child: Text(
@@ -351,10 +370,17 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],
         onTap: (index) {
-          if (index == 0) Navigator.pushNamed(context, '/');
-          if (index == 1) Navigator.pushNamed(context, '/cart');
+          if (index == 0) Navigator.pushNamed(context, '/admin/dashboard');
+          if (index == 1) Navigator.pushNamed(context, '');
           if (index == 2) print('Like tapped');
-          if (index == 3) Navigator.pushNamed(context, '/login');
+          if (index == 3) {
+            if (isLoggedIn) {
+              Navigator.pushNamed(context, '/userProfile');
+            } else {
+              Navigator.pushNamed(context, '/login');
+            }
+          }
+          ;
         },
       ),
     );

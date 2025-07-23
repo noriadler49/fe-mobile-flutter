@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fe_mobile_flutter/FE/auth_status.dart';
 
 class MyCart extends StatefulWidget {
   const MyCart({super.key});
@@ -37,13 +38,18 @@ class _MyCartState extends State<MyCart> {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 12.0,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Card(
                   elevation: 3,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   child: ListTile(
                     leading: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
@@ -56,7 +62,10 @@ class _MyCartState extends State<MyCart> {
                     ),
                     title: Text(
                       foodName,
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     subtitle: Text(
                       "\$${price.toStringAsFixed(2)}",
@@ -80,7 +89,7 @@ class _MyCartState extends State<MyCart> {
                 ),
                 SizedBox(height: 20),
                 Text(
-                  "Total: \$${ (price * quantity).toStringAsFixed(2)}",
+                  "Total: \$${(price * quantity).toStringAsFixed(2)}",
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -117,7 +126,8 @@ class _MyCartState extends State<MyCart> {
                               {
                                 'shop': 'Pizza Shop',
                                 'name': 'Spaghetti',
-                                'ingredients': 'Spaghetti + Meat + Tomato Sauce',
+                                'ingredients':
+                                    'Spaghetti + Meat + Tomato Sauce',
                                 'price': 5.99,
                                 'quantity': quantity,
                                 'image': 'https://via.placeholder.com/50',
@@ -150,7 +160,10 @@ class _MyCartState extends State<MyCart> {
         unselectedItemColor: Color(0xFFB0BEC5),
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Cart'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_cart),
+            label: 'Cart',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Like'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],
@@ -158,7 +171,14 @@ class _MyCartState extends State<MyCart> {
           if (index == 0) Navigator.pushNamed(context, '/');
           if (index == 1) print('Cart tapped');
           if (index == 2) print('Like tapped');
-          if (index == 3) Navigator.pushNamed(context, '/login');
+          if (index == 3) {
+            if (isLoggedIn) {
+              Navigator.pushNamed(context, '/userProfile');
+            } else {
+              Navigator.pushNamed(context, '/login');
+            }
+          }
+          ;
         },
       ),
     );

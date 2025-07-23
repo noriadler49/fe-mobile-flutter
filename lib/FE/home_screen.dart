@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:fe_mobile_flutter/fe/admin/admin_search_button.dart';
+import 'package:fe_mobile_flutter/FE/auth_status.dart';
 
+// import 'dart:convert';
+// import 'package:http/http.dart' as http;
 class HomeScreen extends StatefulWidget {
   HomeScreen({super.key});
 
@@ -8,13 +12,44 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final List<Map<String, String>> foods = [
+  List<Map<String, String>> foods = [
     {"name": "Spaghetti", "price": "\$8", "image": "assets/spaghetti.png"},
     {"name": "Burger", "price": "\$6", "image": "assets/burger.png"},
     {"name": "Pizza", "price": "\$9", "image": "assets/pizza.png"},
   ];
+  List<Map<String, String>> allFoods = [];
   final PageController _pageController = PageController(viewportFraction: 0.85);
   bool _isSearchBarVisible = false;
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    allFoods = List.from(foods); // backup for reset
+    // loadFoods(); // instead of assigning static list
+  }
+
+  // Future<void> loadFoodsFromApi() async {
+  //   final response = await http.get(Uri.parse('https://your-api.com/foods'));
+
+  //   if (response.statusCode == 200) {
+  //     final List<dynamic> jsonList = json.decode(response.body);
+  //     final List<Map<String, String>> loadedFoods = jsonList.map((item) {
+  //       return {
+  //         "name": item['name'],
+  //         "price": item['price'],
+  //         "image": item['image'], // Optional, if you have image URLs or paths
+  //       };
+  //     }).toList();
+
+  //     setState(() {
+  //       allFoods = loadedFoods;
+  //       foods = loadedFoods;
+  //     });
+  //   } else {
+  //     throw Exception('Failed to load foods');
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -80,14 +115,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.pushNamed(context, '/contact');
               },
             ),
-            ListTile(
-              leading: Icon(Icons.admin_panel_settings, color: Colors.red),
-              title: Text('Admin Dashboard'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/admin/dashboard');
-              },
-            ),
           ],
         ),
       ),
@@ -101,7 +128,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 title: 'MENU',
                 rightIcons: [
                   IconButton(
-                    icon: Icon(Icons.shopping_cart, color: Colors.white, size: 20),
+                    icon: Icon(
+                      Icons.shopping_cart,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                     onPressed: () {
                       Navigator.pushNamed(context, '/cart');
                     },
@@ -148,7 +179,10 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               // Food Section
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 8.0,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -213,7 +247,10 @@ class _HomeScreenState extends State<HomeScreen> {
         unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Cart'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_cart),
+            label: 'Cart',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Like'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],
@@ -221,14 +258,24 @@ class _HomeScreenState extends State<HomeScreen> {
           if (index == 0) return;
           if (index == 1) Navigator.pushNamed(context, '/cart');
           if (index == 2) print('Like tapped');
-          if (index == 3) Navigator.pushNamed(context, '/login');
+          if (index == 3) {
+            if (isLoggedIn) {
+              Navigator.pushNamed(context, '/userProfile');
+            } else {
+              Navigator.pushNamed(context, '/login');
+            }
+          }
         },
       ),
     );
   }
 
   Widget _buildFoodItem(
-      BuildContext context, String imagePath, String title, String price) {
+    BuildContext context,
+    String imagePath,
+    String title,
+    String price,
+  ) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 8.0),
       child: Card(
@@ -325,6 +372,15 @@ class _HomeScreenState extends State<HomeScreen> {
           if (isSearchBarVisible) ...[
             SizedBox(height: 8),
             TextField(
+              controller: _searchController,
+              onChanged: (value) {
+                final query = value.toLowerCase();
+                setState(() {
+                  foods = allFoods.where((food) {
+                    return food['name']!.toLowerCase().contains(query);
+                  }).toList();
+                });
+              },
               decoration: InputDecoration(
                 hintText: searchHintText ?? 'Search...',
                 hintStyle: TextStyle(color: Colors.white70),

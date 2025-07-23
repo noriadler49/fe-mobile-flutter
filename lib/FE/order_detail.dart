@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fe_mobile_flutter/FE/auth_status.dart';
 
 class OrderDetailsScreen extends StatefulWidget {
   final String orderId;
@@ -41,7 +42,11 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                 title: 'ORDER DETAILS',
                 rightIcons: [
                   IconButton(
-                    icon: Icon(Icons.shopping_cart, color: Colors.white, size: 20),
+                    icon: Icon(
+                      Icons.shopping_cart,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                     onPressed: () {
                       Navigator.pushNamed(context, '/cart');
                     },
@@ -63,7 +68,10 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
               ),
               // Order Information
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 12.0,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -130,7 +138,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                                 SizedBox(width: 12.0),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         item['name'],
@@ -142,7 +151,10 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                                       SizedBox(height: 4),
                                       Text(
                                         item['ingredients'],
-                                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.grey[600],
+                                        ),
                                       ),
                                       SizedBox(height: 4),
                                       Text(
@@ -178,9 +190,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                           Navigator.pushNamed(
                             context,
                             '/cart',
-                            arguments: {
-                              'cartItems': widget.items,
-                            },
+                            arguments: {'cartItems': widget.items},
                           );
                         },
                         style: ElevatedButton.styleFrom(
@@ -208,7 +218,10 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
         unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Cart'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_cart),
+            label: 'Cart',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Like'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],
@@ -216,7 +229,14 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
           if (index == 0) Navigator.pushNamed(context, '/');
           if (index == 1) Navigator.pushNamed(context, '/cart');
           if (index == 2) print('Like tapped');
-          if (index == 3) Navigator.pushNamed(context, '/login');
+          if (index == 3) {
+            if (isLoggedIn) {
+              Navigator.pushNamed(context, '/userProfile');
+            } else {
+              Navigator.pushNamed(context, '/login');
+            }
+          }
+          ;
         },
       ),
     );

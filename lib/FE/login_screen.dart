@@ -34,8 +34,22 @@ class LoginScreen extends StatelessWidget {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                isLoggedIn = true; // giả lập đăng nhập thành công
-                Navigator.pushNamed(context, '/cart'); // về giỏ hàng
+                String username = userController.text.trim();
+                String password = passController.text.trim();
+                // isLoggedIn = true; // giả lập đăng nhập thành công
+                // Navigator.pushNamed(context, '/cart'); // về giỏ hàng
+                String? route = checkLogin(username, password);
+
+                if (route != null) {
+                  Navigator.pushNamed(context, route);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("Invalid username or password"),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
               },
               child: Text("Login"),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),

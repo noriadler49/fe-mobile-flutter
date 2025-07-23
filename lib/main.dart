@@ -11,6 +11,7 @@ import 'FE/checkout_screen.dart';
 import 'FE/address_screen.dart';
 import 'FE/don_hang.dart';
 import 'FE/order_detail.dart';
+import 'FE/user_profile.dart';
 import 'FE/ADMIN/admin_dashboard.dart';
 import 'FE/ADMIN/admin_all.dart';
 import 'FE/ADMIN/admin_add.dart';
@@ -36,10 +37,11 @@ class MyApp extends StatelessWidget {
         '/login': (context) => LoginScreen(),
         '/address': (context) => AddressScreen(),
         '/orderHistory': (context) => OrderPage(),
-        '/profile': (context) => Scaffold(
-              appBar: AppBar(title: Text('Profile')),
-              body: Center(child: Text('Profile Screen (To be implemented)')),
-            ),
+        // '/profile': (context) => Scaffold(
+        //       appBar: AppBar(title: Text('Profile')),
+        //       body: Center(child: Text('Profile Screen (To be implemented)')),
+        //     ),
+        '/userProfile': (context) => UserProfileScreen(),
         '/admin/dashboard': (context) => AdminDashboardScreen(),
         '/admin/orders': (context) => AllOrdersScreen(),
         '/admin/add': (context) => AdminAddDishScreen(),

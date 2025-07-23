@@ -3,6 +3,8 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:fe_mobile_flutter/data/dish_storage.dart'; // Adjust import based on your structure
+import 'package:fe_mobile_flutter/fe/admin/admin_search_button.dart'; // adjust path as needed
+import 'package:fe_mobile_flutter/FE/auth_status.dart';
 
 class AdminAddDishScreen extends StatefulWidget {
   const AdminAddDishScreen({super.key});
@@ -29,6 +31,7 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
       "price": "12.99",
     },
   ];
+  List<Map<String, String>> allDishes = [];
   bool _isEditing = false;
   String? _editingId;
 
@@ -43,6 +46,7 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
     final dishesData = await DishRepository.loadDishes();
     setState(() {
       dishes = dishesData;
+      allDishes = dishesData; // Store original full list for filtering
     });
   }
 
@@ -288,10 +292,10 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                     Table(
                       border: TableBorder.all(color: Colors.grey),
                       columnWidths: {
-                        0: FlexColumnWidth(1),
+                        0: FlexColumnWidth(0.6),
                         1: FlexColumnWidth(2),
                         2: FlexColumnWidth(1),
-                        3: FlexColumnWidth(1),
+                        3: FlexColumnWidth(1.4),
                       },
                       children: [
                         TableRow(
@@ -305,16 +309,44 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                             ),
                             Padding(
                               padding: EdgeInsets.all(8.0),
-                              child: Text(
-                                "Dish's Name",
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                              child: FilterButtonWithPopup(
+                                label: 'Dish Name',
+                                onSearch: (value) async {
+                                  if (value.isEmpty) {
+                                    await _loadDishes(); // Reload from file when cleared
+                                  } else {
+                                    setState(() {
+                                      dishes = allDishes
+                                          .where(
+                                            (dish) => dish['name']!
+                                                .toLowerCase()
+                                                .contains(value.toLowerCase()),
+                                          )
+                                          .toList();
+                                    });
+                                  }
+                                },
                               ),
                             ),
                             Padding(
                               padding: EdgeInsets.all(8.0),
-                              child: Text(
-                                'Price',
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                              child: FilterButtonWithPopup(
+                                label: 'Price',
+                                onSearch: (value) async {
+                                  if (value.isEmpty) {
+                                    await _loadDishes(); // Reload from file when cleared
+                                  } else {
+                                    setState(() {
+                                      dishes = allDishes
+                                          .where(
+                                            (dish) => dish['price']!
+                                                .toLowerCase()
+                                                .contains(value.toLowerCase()),
+                                          )
+                                          .toList();
+                                    });
+                                  }
+                                },
                               ),
                             ),
                             Padding(
@@ -389,10 +421,17 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],
         onTap: (index) {
-          if (index == 0) Navigator.pushNamed(context, '/');
-          if (index == 1) Navigator.pushNamed(context, '/cart');
+          if (index == 0) Navigator.pushNamed(context, '/admin/dashboard');
+          if (index == 1) Navigator.pushNamed(context, '');
           if (index == 2) print('Like tapped');
-          if (index == 3) Navigator.pushNamed(context, '/login');
+          if (index == 3) {
+            if (isLoggedIn) {
+              Navigator.pushNamed(context, '/userProfile');
+            } else {
+              Navigator.pushNamed(context, '/login');
+            }
+          }
+          ;
         },
       ),
     );

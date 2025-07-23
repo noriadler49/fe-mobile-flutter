@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fe_mobile_flutter/data/order_storage.dart'; // Adjust import based on your structure
+import 'package:fe_mobile_flutter/fe/admin/admin_search_button.dart';
+import 'package:fe_mobile_flutter/FE/auth_status.dart';
 
 class AllOrdersScreen extends StatefulWidget {
   const AllOrdersScreen({super.key});
@@ -15,6 +17,8 @@ class _AllOrdersScreenState extends State<AllOrdersScreen> {
     {"id": "1", "itemName": "Pizza", "from": "AB", "date": "2025-07-20"},
     {"id": "2", "itemName": "Burger", "from": "EL", "date": "2025-07-21"},
   ];
+  List<Map<String, String>> allOrders = []; // original full list
+
   bool _isEditing = false;
   String? _editingId;
 
@@ -29,6 +33,7 @@ class _AllOrdersScreenState extends State<AllOrdersScreen> {
     final ordersData = await OrderRepository.loadOrders();
     setState(() {
       orders = ordersData;
+      allOrders = ordersData;
     });
   }
 
@@ -268,10 +273,10 @@ class _AllOrdersScreenState extends State<AllOrdersScreen> {
                     Table(
                       border: TableBorder.all(color: Colors.grey),
                       columnWidths: {
-                        0: FlexColumnWidth(1),
+                        0: FlexColumnWidth(0.6),
                         1: FlexColumnWidth(2),
                         2: FlexColumnWidth(1),
-                        3: FlexColumnWidth(1),
+                        3: FlexColumnWidth(1.4),
                       },
                       children: [
                         TableRow(
@@ -285,16 +290,44 @@ class _AllOrdersScreenState extends State<AllOrdersScreen> {
                             ),
                             Padding(
                               padding: EdgeInsets.all(8.0),
-                              child: Text(
-                                "Tên hàng",
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                              child: FilterButtonWithPopup(
+                                label: 'Item Name',
+                                onSearch: (value) async {
+                                  if (value.isEmpty) {
+                                    await _loadOrders(); // ✅ reload or restore full list
+                                  } else {
+                                    setState(() {
+                                      orders = allOrders
+                                          .where(
+                                            (order) => order['itemName']!
+                                                .toLowerCase()
+                                                .contains(value.toLowerCase()),
+                                          )
+                                          .toList();
+                                    });
+                                  }
+                                },
                               ),
                             ),
                             Padding(
                               padding: EdgeInsets.all(8.0),
-                              child: Text(
-                                'From',
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                              child: FilterButtonWithPopup(
+                                label: 'From',
+                                onSearch: (value) async {
+                                  if (value.isEmpty) {
+                                    await _loadOrders(); // ✅ reload or restore full list
+                                  } else {
+                                    setState(() {
+                                      orders = allOrders
+                                          .where(
+                                            (order) => order['from']!
+                                                .toLowerCase()
+                                                .contains(value.toLowerCase()),
+                                          )
+                                          .toList();
+                                    });
+                                  }
+                                },
                               ),
                             ),
                             Padding(
@@ -369,10 +402,17 @@ class _AllOrdersScreenState extends State<AllOrdersScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],
         onTap: (index) {
-          if (index == 0) Navigator.pushNamed(context, '/');
-          if (index == 1) Navigator.pushNamed(context, '/cart');
+          if (index == 0) Navigator.pushNamed(context, '/admin/dashboard');
+          if (index == 1) Navigator.pushNamed(context, '');
           if (index == 2) print('Like tapped');
-          if (index == 3) Navigator.pushNamed(context, '/login');
+          if (index == 3) {
+            if (isLoggedIn) {
+              Navigator.pushNamed(context, '/userProfile');
+            } else {
+              Navigator.pushNamed(context, '/login');
+            }
+          }
+          ;
         },
       ),
     );
