@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:fe_mobile_flutter/data/ingredient_storage.dart'; // Adjust import based on your structure
+<<<<<<< HEAD
 import 'package:fe_mobile_flutter/fe/admin/admin_search_button.dart';
 import 'package:fe_mobile_flutter/FE/auth_status.dart';
 
+=======
+import 'package:fe_mobile_flutter/FE/auth_status.dart';
+>>>>>>> c76f56cfac719ef30c420db6b7b2b482a0fd8ddb
 class ManageIngredientsScreen extends StatefulWidget {
   const ManageIngredientsScreen({super.key});
 
@@ -380,7 +384,10 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
               Navigator.pushNamed(context, '/login');
             }
           }
+<<<<<<< HEAD
           ;
+=======
+>>>>>>> c76f56cfac719ef30c420db6b7b2b482a0fd8ddb
         },
       ),
     );

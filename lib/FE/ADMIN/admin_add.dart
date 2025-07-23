@@ -3,7 +3,10 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:fe_mobile_flutter/data/dish_storage.dart'; // Adjust import based on your structure
+<<<<<<< HEAD
 import 'package:fe_mobile_flutter/fe/admin/admin_search_button.dart'; // adjust path as needed
+=======
+>>>>>>> c76f56cfac719ef30c420db6b7b2b482a0fd8ddb
 import 'package:fe_mobile_flutter/FE/auth_status.dart';
 
 class AdminAddDishScreen extends StatefulWidget {
@@ -424,14 +427,21 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
           if (index == 0) Navigator.pushNamed(context, '/admin/dashboard');
           if (index == 1) Navigator.pushNamed(context, '');
           if (index == 2) print('Like tapped');
+<<<<<<< HEAD
           if (index == 3) {
+=======
+                    if (index == 3) {
+>>>>>>> c76f56cfac719ef30c420db6b7b2b482a0fd8ddb
             if (isLoggedIn) {
               Navigator.pushNamed(context, '/userProfile');
             } else {
               Navigator.pushNamed(context, '/login');
             }
           }
+<<<<<<< HEAD
           ;
+=======
+>>>>>>> c76f56cfac719ef30c420db6b7b2b482a0fd8ddb
         },
       ),
     );

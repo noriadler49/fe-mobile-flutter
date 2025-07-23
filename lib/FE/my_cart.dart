@@ -172,13 +172,20 @@ class _MyCartState extends State<MyCart> {
           if (index == 1) print('Cart tapped');
           if (index == 2) print('Like tapped');
           if (index == 3) {
+<<<<<<< HEAD
             if (isLoggedIn) {
+=======
+          if (isLoggedIn) {
+>>>>>>> c76f56cfac719ef30c420db6b7b2b482a0fd8ddb
               Navigator.pushNamed(context, '/userProfile');
             } else {
               Navigator.pushNamed(context, '/login');
             }
           }
+<<<<<<< HEAD
           ;
+=======
+>>>>>>> c76f56cfac719ef30c420db6b7b2b482a0fd8ddb
         },
       ),
     );

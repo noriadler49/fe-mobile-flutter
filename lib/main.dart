@@ -37,10 +37,13 @@ class MyApp extends StatelessWidget {
         '/login': (context) => LoginScreen(),
         '/address': (context) => AddressScreen(),
         '/orderHistory': (context) => OrderPage(),
+<<<<<<< HEAD
         // '/profile': (context) => Scaffold(
         //       appBar: AppBar(title: Text('Profile')),
         //       body: Center(child: Text('Profile Screen (To be implemented)')),
         //     ),
+=======
+>>>>>>> c76f56cfac719ef30c420db6b7b2b482a0fd8ddb
         '/userProfile': (context) => UserProfileScreen(),
         '/admin/dashboard': (context) => AdminDashboardScreen(),
         '/admin/orders': (context) => AllOrdersScreen(),

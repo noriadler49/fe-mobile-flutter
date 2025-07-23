@@ -13,10 +13,14 @@ class UserProfileScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+<<<<<<< HEAD
         title: const Text(
           'User Profile',
           style: TextStyle(color: Colors.white),
         ),
+=======
+        title: const Text('User Profile', style: TextStyle(color: Colors.white)),
+>>>>>>> c76f56cfac719ef30c420db6b7b2b482a0fd8ddb
         backgroundColor: Colors.red,
         centerTitle: true,
       ),
@@ -91,10 +95,14 @@ class UserProfileScreen extends StatelessWidget {
             ),
             if (isLoggedIn)
               ListTile(
+<<<<<<< HEAD
                 leading: const Icon(
                   Icons.admin_panel_settings,
                   color: Colors.red,
                 ),
+=======
+                leading: const Icon(Icons.admin_panel_settings, color: Colors.red),
+>>>>>>> c76f56cfac719ef30c420db6b7b2b482a0fd8ddb
                 title: const Text('Admin Dashboard'),
                 onTap: () {
                   Navigator.pop(context);
@@ -135,10 +143,14 @@ class UserProfileScreen extends StatelessWidget {
                           const SizedBox(width: 12),
                           Text(
                             'Name: $userName',
+<<<<<<< HEAD
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
+=======
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+>>>>>>> c76f56cfac719ef30c420db6b7b2b482a0fd8ddb
                           ),
                         ],
                       ),
@@ -149,10 +161,14 @@ class UserProfileScreen extends StatelessWidget {
                           const SizedBox(width: 12),
                           Text(
                             'Address: $address',
+<<<<<<< HEAD
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
+=======
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+>>>>>>> c76f56cfac719ef30c420db6b7b2b482a0fd8ddb
                           ),
                         ],
                       ),
@@ -163,10 +179,14 @@ class UserProfileScreen extends StatelessWidget {
                           const SizedBox(width: 12),
                           Text(
                             'Phone: $phoneNumber',
+<<<<<<< HEAD
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
+=======
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+>>>>>>> c76f56cfac719ef30c420db6b7b2b482a0fd8ddb
                           ),
                         ],
                       ),
@@ -179,11 +199,15 @@ class UserProfileScreen extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () {
                     isLoggedIn = false; // Simulate logout
+<<<<<<< HEAD
                     Navigator.pushNamedAndRemoveUntil(
                       context,
                       '/login',
                       (route) => false,
                     );
+=======
+                    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+>>>>>>> c76f56cfac719ef30c420db6b7b2b482a0fd8ddb
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,
@@ -208,10 +232,14 @@ class UserProfileScreen extends StatelessWidget {
         currentIndex: 3, // Highlight Account tab
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+<<<<<<< HEAD
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_cart),
             label: 'Cart',
           ),
+=======
+          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Cart'),
+>>>>>>> c76f56cfac719ef30c420db6b7b2b482a0fd8ddb
           BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Like'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],
@@ -224,4 +252,8 @@ class UserProfileScreen extends StatelessWidget {
       ),
     );
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> c76f56cfac719ef30c420db6b7b2b482a0fd8ddb
