@@ -134,21 +134,14 @@ class _FoodDetailsScreenState extends State<FoodDetailsScreen> {
           if (index == 0) Navigator.pushNamed(context, '/');
           if (index == 1) Navigator.pushNamed(context, '/cart');
           if (index == 2) print('Like tapped');
-<<<<<<< HEAD
-          if (index == 3) {
-=======
                     if (index == 3) {
->>>>>>> c76f56cfac719ef30c420db6b7b2b482a0fd8ddb
+
             if (isLoggedIn) {
               Navigator.pushNamed(context, '/userProfile');
             } else {
               Navigator.pushNamed(context, '/login');
             }
           }
-<<<<<<< HEAD
-          ;
-=======
->>>>>>> c76f56cfac719ef30c420db6b7b2b482a0fd8ddb
         },
       ),
     );

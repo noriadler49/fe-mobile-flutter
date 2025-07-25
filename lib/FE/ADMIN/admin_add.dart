@@ -1,12 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
-import 'dart:convert';
-import 'dart:io';
-import 'package:fe_mobile_flutter/data/dish_storage.dart'; // Adjust import based on your structure
-<<<<<<< HEAD
-import 'package:fe_mobile_flutter/fe/admin/admin_search_button.dart'; // adjust path as needed
-=======
->>>>>>> c76f56cfac719ef30c420db6b7b2b482a0fd8ddb
+import 'package:fe_mobile_flutter/models/dish_model.dart';
+import 'package:fe_mobile_flutter/services/api_service.dart';
+import 'package:fe_mobile_flutter/fe/admin/admin_search_button.dart';
 import 'package:fe_mobile_flutter/FE/auth_status.dart';
 
 class AdminAddDishScreen extends StatefulWidget {
@@ -20,23 +15,10 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
   final _imgUrlController = TextEditingController();
-  List<Map<String, String>> dishes = [
-    {
-      "id": "1",
-      "name": "Dish 1",
-      "image": "/assets/burger.jpg",
-      "price": "10.99",
-    },
-    {
-      "id": "2",
-      "name": "Dish 2",
-      "image": "/assets/burger.jpg",
-      "price": "12.99",
-    },
-  ];
-  List<Map<String, String>> allDishes = [];
+  List<Dish> dishes = [];
+  List<Dish> allDishes = [];
   bool _isEditing = false;
-  String? _editingId;
+  int? _editingId;
 
   @override
   void initState() {
@@ -44,92 +26,105 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
     _loadDishes();
   }
 
-  // Load dishes from JSON file
   Future<void> _loadDishes() async {
-    final dishesData = await DishRepository.loadDishes();
-    setState(() {
-      dishes = dishesData;
-      allDishes = dishesData; // Store original full list for filtering
-    });
+    try {
+      final loadedDishes = await ApiService.fetchDishes();
+      setState(() {
+        dishes = loadedDishes;
+        allDishes = List.from(loadedDishes);
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading dishes: $e')),
+      );
+    }
   }
 
-  // Handle adding or updating a dish
   Future<void> _addOrUpdateDish() async {
     final name = _nameController.text.trim();
     final price = _priceController.text.trim();
     final imgUrl = _imgUrlController.text.trim();
 
-    // Basic validation
-    if (name.isEmpty || price.isEmpty || imgUrl.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Please fill in all fields')));
+    if (name.isEmpty || price.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please fill in name and price fields')),
+      );
       return;
     }
-    if (double.tryParse(price) == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Price must be a valid number')));
+    final priceValue = double.tryParse(price);
+    if (priceValue == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Price must be a valid number')),
+      );
       return;
     }
 
-    setState(() {
+    try {
+      final dish = Dish(
+        id: _isEditing ? _editingId : null,
+        name: name,
+        imageUrl: imgUrl.isEmpty ? null : imgUrl,
+        description: '', // Placeholder
+        price: priceValue,
+        categoryId: 1, // Placeholder, adjust as needed
+      );
+
       if (_isEditing && _editingId != null) {
-        // Update existing dish
-        final index = dishes.indexWhere((dish) => dish['id'] == _editingId);
-        if (index != -1) {
-          dishes[index] = {
-            'id': _editingId!,
-            'name': name,
-            'price': price,
-            'image': imgUrl,
-          };
-        }
-        _isEditing = false;
-        _editingId = null;
+        print('Updating dish with ID: $_editingId, name: $name, price: $priceValue, imgUrl: $imgUrl');
+        final updatedDish = await ApiService.updateDish(_editingId!, dish, imgUrl);
+        print('Update response: $updatedDish');
+        // Refresh the table by fetching the latest data
+        await _loadDishes();
       } else {
-        // Add new dish
-        final newId = (dishes.length + 1).toString();
-        dishes.add({
-          'id': newId,
-          'name': name,
-          'price': price,
-          'image': imgUrl,
+        final createdDish = await ApiService.createDish(dish, imgUrl);
+        setState(() {
+          dishes.add(createdDish);
+          allDishes.add(createdDish);
         });
       }
-      // Clear form
       _nameController.clear();
       _priceController.clear();
       _imgUrlController.clear();
-    });
-
-    // Save to JSON
-    await DishRepository.saveDishes(dishes);
+      setState(() {
+        _isEditing = false;
+        _editingId = null;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
   }
 
-  // Handle edit button click
-  void _editDish(String id) {
-    final dish = dishes.firstWhere((dish) => dish['id'] == id);
+  void _editDish(int? id) {
+    if (id == null) return;
+    final dish = dishes.firstWhere((dish) => dish.id == id);
     setState(() {
-      _nameController.text = dish['name']!;
-      _priceController.text = dish['price']!;
-      _imgUrlController.text = dish['image']!;
+      _nameController.text = dish.name;
+      _priceController.text = dish.price.toString();
+      _imgUrlController.text = dish.imageUrl ?? '';
       _isEditing = true;
       _editingId = id;
     });
   }
 
-  // Handle delete button click
-  Future<void> _deleteDish(String id) async {
-    setState(() {
-      dishes.removeWhere((dish) => dish['id'] == id);
-    });
-    // Save updated list to JSON
-    await DishRepository.saveDishes(dishes);
-    // Show confirmation
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Dish deleted successfully')));
+  Future<void> _deleteDish(int? id) async {
+    if (id == null) return;
+    try {
+      await ApiService.deleteDish(id);
+      setState(() {
+        dishes.removeWhere((dish) => dish.id == id);
+        allDishes.removeWhere((dish) => dish.id == id);
+      });
+      await _loadDishes();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Dish deleted successfully')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error deleting dish: $e')),
+      );
+    }
   }
 
   @override
@@ -186,8 +181,6 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                 ],
               ),
             ),
-
-            // Bottom-fixed Admin Dashboard option
             Divider(),
             ListTile(
               leading: Icon(Icons.admin_panel_settings, color: Colors.red),
@@ -205,7 +198,6 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
               Container(
                 padding: EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 12.0),
                 decoration: BoxDecoration(
@@ -266,7 +258,7 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                     ),
                     TextField(
                       controller: _imgUrlController,
-                      decoration: InputDecoration(labelText: 'IMGURL:'),
+                      decoration: InputDecoration(labelText: 'Image URL:'),
                     ),
                     SizedBox(height: 16),
                     ElevatedButton(
@@ -274,6 +266,14 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                       child: Text(_isEditing ? 'Update' : 'Add'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    ElevatedButton(
+                      onPressed: _loadDishes,
+                      child: Text('Refresh'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
                       ),
                     ),
                   ],
@@ -293,6 +293,7 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                     ),
                     SizedBox(height: 8),
                     Table(
+                      key: ValueKey(dishes.length), // Force rebuild on list change
                       border: TableBorder.all(color: Colors.grey),
                       columnWidths: {
                         0: FlexColumnWidth(0.6),
@@ -316,15 +317,13 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                                 label: 'Dish Name',
                                 onSearch: (value) async {
                                   if (value.isEmpty) {
-                                    await _loadDishes(); // Reload from file when cleared
+                                    await _loadDishes();
                                   } else {
                                     setState(() {
                                       dishes = allDishes
-                                          .where(
-                                            (dish) => dish['name']!
-                                                .toLowerCase()
-                                                .contains(value.toLowerCase()),
-                                          )
+                                          .where((dish) => dish.name
+                                              .toLowerCase()
+                                              .contains(value.toLowerCase()))
                                           .toList();
                                     });
                                   }
@@ -337,15 +336,14 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                                 label: 'Price',
                                 onSearch: (value) async {
                                   if (value.isEmpty) {
-                                    await _loadDishes(); // Reload from file when cleared
+                                    await _loadDishes();
                                   } else {
                                     setState(() {
                                       dishes = allDishes
-                                          .where(
-                                            (dish) => dish['price']!
-                                                .toLowerCase()
-                                                .contains(value.toLowerCase()),
-                                          )
+                                          .where((dish) => dish.price
+                                              .toString()
+                                              .toLowerCase()
+                                              .contains(value.toLowerCase()))
                                           .toList();
                                     });
                                   }
@@ -361,47 +359,38 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                             ),
                           ],
                         ),
-                        ...dishes
-                            .map(
-                              (dish) => TableRow(
-                                children: [
-                                  Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: Text(dish['id']!),
+                        ...dishes.map((dish) => TableRow(
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Text(dish.id?.toString() ?? 'N/A'),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Text(dish.name),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Text(dish.price.toStringAsFixed(2)),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: Icon(Icons.edit),
+                                        onPressed: () => _editDish(dish.id),
+                                      ),
+                                      IconButton(
+                                        icon: Icon(Icons.delete, color: Colors.red),
+                                        onPressed: () => _deleteDish(dish.id),
+                                      ),
+                                    ],
                                   ),
-                                  Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: Text(dish['name']!),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: Text(dish['price']!),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        IconButton(
-                                          icon: Icon(Icons.edit),
-                                          onPressed: () =>
-                                              _editDish(dish['id']!),
-                                        ),
-                                        IconButton(
-                                          icon: Icon(
-                                            Icons.delete,
-                                            color: Colors.red,
-                                          ),
-                                          onPressed: () =>
-                                              _deleteDish(dish['id']!),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                            .toList(),
+                                ),
+                              ],
+                            )).toList(),
                       ],
                     ),
                   ],
@@ -415,33 +404,26 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
         selectedItemColor: Colors.red,
         unselectedItemColor: Colors.grey,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
-            label: 'Cart',
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Like'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
+              icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.shopping_cart), label: 'Cart'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.favorite), label: 'Like'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.person), label: 'Account'),
         ],
         onTap: (index) {
           if (index == 0) Navigator.pushNamed(context, '/admin/dashboard');
           if (index == 1) Navigator.pushNamed(context, '');
           if (index == 2) print('Like tapped');
-<<<<<<< HEAD
           if (index == 3) {
-=======
-                    if (index == 3) {
->>>>>>> c76f56cfac719ef30c420db6b7b2b482a0fd8ddb
             if (isLoggedIn) {
               Navigator.pushNamed(context, '/userProfile');
             } else {
               Navigator.pushNamed(context, '/login');
             }
           }
-<<<<<<< HEAD
-          ;
-=======
->>>>>>> c76f56cfac719ef30c420db6b7b2b482a0fd8ddb
         },
       ),
     );

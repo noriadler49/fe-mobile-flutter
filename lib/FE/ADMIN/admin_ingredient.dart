@@ -1,30 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:fe_mobile_flutter/data/ingredient_storage.dart'; // Adjust import based on your structure
-<<<<<<< HEAD
+import 'package:fe_mobile_flutter/models/ingredient_model.dart';
+import 'package:fe_mobile_flutter/services/api_service.dart';
 import 'package:fe_mobile_flutter/fe/admin/admin_search_button.dart';
 import 'package:fe_mobile_flutter/FE/auth_status.dart';
 
-=======
-import 'package:fe_mobile_flutter/FE/auth_status.dart';
->>>>>>> c76f56cfac719ef30c420db6b7b2b482a0fd8ddb
 class ManageIngredientsScreen extends StatefulWidget {
   const ManageIngredientsScreen({super.key});
 
   @override
-  _ManageIngredientsScreenState createState() =>
-      _ManageIngredientsScreenState();
+  _ManageIngredientsScreenState createState() => _ManageIngredientsScreenState();
 }
 
 class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
   final _nameController = TextEditingController();
-  final _idController = TextEditingController();
-  List<Map<String, String>> ingredients = [
-    {"id": "1", "name": "Tomato"},
-    {"id": "2", "name": "Onion"},
-  ];
-  List<Map<String, String>> allIngredients = [];
-  bool _isEditing = false;
-  String? _editingId;
+  List<Ingredient> ingredients = [];
+  List<Ingredient> allIngredients = [];
 
   @override
   void initState() {
@@ -32,20 +22,23 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
     _loadIngredients();
   }
 
-  // Load ingredients from JSON file
-  Future<void> _loadIngredients() async {
-    final ingredientsData = await IngredientRepository.loadIngredients();
-    setState(() {
-      ingredients = ingredientsData;
-      allIngredients = ingredientsData;
-    });
+  Future<void> _loadIngredients({String query = ''}) async {
+    try {
+      final fetchedIngredients = await ApiService.fetchIngredients(query: query);
+      setState(() {
+        ingredients = fetchedIngredients;
+        allIngredients = List.from(ingredients);
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading ingredients: $e')),
+      );
+    }
   }
 
-  // Handle adding or updating an ingredient
-  Future<void> _addOrUpdateIngredient() async {
+  Future<void> _addIngredient() async {
     final name = _nameController.text.trim();
 
-    // Basic validation
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Please fill in the ingredient name')),
@@ -53,55 +46,32 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
       return;
     }
 
-    setState(() {
-      if (_isEditing && _editingId != null) {
-        // Update existing ingredient
-        final index = ingredients.indexWhere(
-          (ingredient) => ingredient['id'] == _editingId,
-        );
-        if (index != -1) {
-          ingredients[index] = {'id': _editingId!, 'name': name};
-        }
-        _isEditing = false;
-        _editingId = null;
-      } else {
-        // Add new ingredient
-        final newId = (ingredients.length + 1).toString();
-        ingredients.add({'id': newId, 'name': name});
-      }
-      // Clear form
+    try {
+      await ApiService.createIngredient(Ingredient(name: name));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ingredient added successfully')),
+      );
       _nameController.clear();
-      _idController.clear();
-    });
-
-    // Save to JSON
-    await IngredientRepository.saveIngredients(ingredients);
+      await _loadIngredients();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
   }
 
-  // Handle edit button click
-  void _editIngredient(String id) {
-    final ingredient = ingredients.firstWhere(
-      (ingredient) => ingredient['id'] == id,
-    );
-    setState(() {
-      _nameController.text = ingredient['name']!;
-      _idController.text = ingredient['id']!; // Optional, for display only
-      _isEditing = true;
-      _editingId = id;
-    });
-  }
-
-  // Handle delete button click
-  Future<void> _deleteIngredient(String id) async {
-    setState(() {
-      ingredients.removeWhere((ingredient) => ingredient['id'] == id);
-    });
-    // Save updated list to JSON
-    await IngredientRepository.saveIngredients(ingredients);
-    // Show confirmation
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Ingredient deleted successfully')));
+  Future<void> _deleteIngredient(int id) async {
+    try {
+      await ApiService.deleteIngredient(id);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ingredient deleted successfully')),
+      );
+      await _loadIngredients();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error deleting ingredient: $e')),
+      );
+    }
   }
 
   @override
@@ -158,8 +128,6 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
                 ],
               ),
             ),
-
-            // Bottom-fixed Admin Dashboard option
             Divider(),
             ListTile(
               leading: Icon(Icons.admin_panel_settings, color: Colors.red),
@@ -177,7 +145,6 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
               Container(
                 padding: EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 12.0),
                 decoration: BoxDecoration(
@@ -210,9 +177,7 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
                           },
                         ),
                         Text(
-                          _isEditing
-                              ? 'Edit Ingredient'
-                              : 'Quản lý nguyên liệu',
+                          'Quản lý nguyên liệu',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -232,21 +197,23 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
                     TextField(
                       controller: _nameController,
                       decoration: InputDecoration(
-                        labelText: 'Ingredient Name:',
+                        labelText: 'Ingredient Name',
                       ),
                     ),
                     SizedBox(height: 16),
-                    TextField(
-                      controller: _idController,
-                      decoration: InputDecoration(labelText: 'Ingredient ID:'),
-                      enabled: false, // Disabled since ID is auto-generated
-                    ),
-                    SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: _addOrUpdateIngredient,
-                      child: Text(_isEditing ? 'Update' : 'Add'),
+                      onPressed: _addIngredient,
+                      child: Text('Add'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    ElevatedButton(
+                      onPressed: _loadIngredients,
+                      child: Text('Refresh'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
                       ),
                     ),
                   ],
@@ -266,6 +233,7 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
                     ),
                     SizedBox(height: 8),
                     Table(
+                      key: ValueKey(ingredients.length),
                       border: TableBorder.all(color: Colors.grey),
                       columnWidths: {
                         0: FlexColumnWidth(0.5),
@@ -287,23 +255,10 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
                               child: FilterButtonWithPopup(
                                 label: 'Ingredient Name',
                                 onSearch: (value) async {
-                                  if (value.isEmpty) {
-                                    await _loadIngredients(); // Reload from file when cleared
-                                  } else {
-                                    setState(() {
-                                      ingredients = allIngredients
-                                          .where(
-                                            (ingredient) => ingredient['name']!
-                                                .toLowerCase()
-                                                .contains(value.toLowerCase()),
-                                          )
-                                          .toList();
-                                    });
-                                  }
+                                  await _loadIngredients(query: value);
                                 },
                               ),
                             ),
-
                             Padding(
                               padding: EdgeInsets.all(8.0),
                               child: Text(
@@ -319,11 +274,11 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
                                 children: [
                                   Padding(
                                     padding: EdgeInsets.all(8.0),
-                                    child: Text(ingredient['id']!),
+                                    child: Text(ingredient.id?.toString() ?? 'N/A'),
                                   ),
                                   Padding(
                                     padding: EdgeInsets.all(8.0),
-                                    child: Text(ingredient['name']!),
+                                    child: Text(ingredient.name),
                                   ),
                                   Padding(
                                     padding: EdgeInsets.all(8.0),
@@ -331,18 +286,12 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         IconButton(
-                                          icon: Icon(Icons.edit),
-                                          onPressed: () => _editIngredient(
-                                            ingredient['id']!,
-                                          ),
-                                        ),
-                                        IconButton(
                                           icon: Icon(
                                             Icons.delete,
                                             color: Colors.red,
                                           ),
                                           onPressed: () => _deleteIngredient(
-                                            ingredient['id']!,
+                                            ingredient.id!,
                                           ),
                                         ),
                                       ],
@@ -384,10 +333,6 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
               Navigator.pushNamed(context, '/login');
             }
           }
-<<<<<<< HEAD
-          ;
-=======
->>>>>>> c76f56cfac719ef30c420db6b7b2b482a0fd8ddb
         },
       ),
     );

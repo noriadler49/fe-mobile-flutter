@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
 import 'package:fe_mobile_flutter/fe/admin/admin_search_button.dart';
-=======
->>>>>>> c76f56cfac719ef30c420db6b7b2b482a0fd8ddb
 import 'package:fe_mobile_flutter/FE/auth_status.dart';
 
 // import 'dart:convert';
@@ -28,7 +25,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    allFoods = List.from(foods); // backup for reset
+    allFoods = List.from(foods);
+     // backup for reset
     // loadFoods(); // instead of assigning static list
   }
 
