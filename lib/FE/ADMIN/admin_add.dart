@@ -3,6 +3,8 @@ import 'package:fe_mobile_flutter/models/dish_model.dart';
 import 'package:fe_mobile_flutter/services/api_service.dart';
 import 'package:fe_mobile_flutter/fe/admin/admin_search_button.dart';
 import 'package:fe_mobile_flutter/FE/auth_status.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class AdminAddDishScreen extends StatefulWidget {
   const AdminAddDishScreen({super.key});
@@ -15,6 +17,8 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
   final _imgUrlController = TextEditingController();
+  File? _selectedImage;
+  final ImagePicker _picker = ImagePicker();
   List<Dish> dishes = [];
   List<Dish> allDishes = [];
   bool _isEditing = false;
@@ -37,6 +41,15 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error loading dishes: $e')),
       );
+    }
+  }
+
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+      });
     }
   }
 
@@ -71,12 +84,11 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
 
       if (_isEditing && _editingId != null) {
         print('Updating dish with ID: $_editingId, name: $name, price: $priceValue, imgUrl: $imgUrl');
-        final updatedDish = await ApiService.updateDish(_editingId!, dish, imgUrl);
+        final updatedDish = await ApiService.updateDish(_editingId!, dish, _selectedImage, imgUrl);
         print('Update response: $updatedDish');
-        // Refresh the table by fetching the latest data
         await _loadDishes();
       } else {
-        final createdDish = await ApiService.createDish(dish, imgUrl);
+        final createdDish = await ApiService.createDish(dish, _selectedImage, imgUrl);
         setState(() {
           dishes.add(createdDish);
           allDishes.add(createdDish);
@@ -86,6 +98,7 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
       _priceController.clear();
       _imgUrlController.clear();
       setState(() {
+        _selectedImage = null;
         _isEditing = false;
         _editingId = null;
       });
@@ -103,6 +116,7 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
       _nameController.text = dish.name;
       _priceController.text = dish.price.toString();
       _imgUrlController.text = dish.imageUrl ?? '';
+      _selectedImage = null; // Reset image when editing
       _isEditing = true;
       _editingId = id;
     });
@@ -258,8 +272,40 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                     ),
                     TextField(
                       controller: _imgUrlController,
-                      decoration: InputDecoration(labelText: 'Image URL:'),
+                      decoration: InputDecoration(labelText: 'Image URL (optional):'),
                     ),
+                    SizedBox(height: 16),
+                    Row(
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: _pickImage,
+                          icon: Icon(Icons.image),
+                          label: Text('Add Image'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                          ),
+                        ),
+                        SizedBox(width: 16),
+                        Expanded(
+                          child: Text(
+                            _selectedImage != null
+                                ? _selectedImage!.path.split('/').last
+                                : 'No image selected',
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (_selectedImage != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Image.file(
+                          _selectedImage!,
+                          height: 100,
+                          width: 100,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
                     SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: _addOrUpdateDish,
@@ -292,106 +338,145 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                       ),
                     ),
                     SizedBox(height: 8),
-                    Table(
-                      key: ValueKey(dishes.length), // Force rebuild on list change
-                      border: TableBorder.all(color: Colors.grey),
-                      columnWidths: {
-                        0: FlexColumnWidth(0.6),
-                        1: FlexColumnWidth(2),
-                        2: FlexColumnWidth(1),
-                        3: FlexColumnWidth(1.4),
-                      },
-                      children: [
-                        TableRow(
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width * 1.5, // Dynamic width for most phones
+                        child: Table(
+                          key: ValueKey(dishes.length),
+                          border: TableBorder.all(color: Colors.grey),
+                          columnWidths: {
+                            0: FlexColumnWidth(0.6), // ID
+                            1: FlexColumnWidth(2),   // Name
+                            2: FlexColumnWidth(1),   // Price
+                            3: FlexColumnWidth(1),   // Image
+                            4: FlexColumnWidth(1.4), // Actions
+                          },
+                          defaultColumnWidth: FixedColumnWidth(120), // Adjusted for smaller screens
                           children: [
-                            Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Text(
-                                'ID',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: FilterButtonWithPopup(
-                                label: 'Dish Name',
-                                onSearch: (value) async {
-                                  if (value.isEmpty) {
-                                    await _loadDishes();
-                                  } else {
-                                    setState(() {
-                                      dishes = allDishes
-                                          .where((dish) => dish.name
-                                              .toLowerCase()
-                                              .contains(value.toLowerCase()))
-                                          .toList();
-                                    });
-                                  }
-                                },
-                              ),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: FilterButtonWithPopup(
-                                label: 'Price',
-                                onSearch: (value) async {
-                                  if (value.isEmpty) {
-                                    await _loadDishes();
-                                  } else {
-                                    setState(() {
-                                      dishes = allDishes
-                                          .where((dish) => dish.price
-                                              .toString()
-                                              .toLowerCase()
-                                              .contains(value.toLowerCase()))
-                                          .toList();
-                                    });
-                                  }
-                                },
-                              ),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Text(
-                                'Thao tác',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          ],
-                        ),
-                        ...dishes.map((dish) => TableRow(
+                            TableRow(
                               children: [
                                 Padding(
-                                  padding: EdgeInsets.all(8.0),
-                                  child: Text(dish.id?.toString() ?? 'N/A'),
+                                  padding: EdgeInsets.all(10.0), // Reduced padding for compactness
+                                  child: Text(
+                                    'ID',
+                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                  ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsets.all(8.0),
-                                  child: Text(dish.name),
+                                  padding: EdgeInsets.all(10.0),
+                                  child: FilterButtonWithPopup(
+                                    label: 'Dish Name',
+                                    onSearch: (value) async {
+                                      if (value.isEmpty) {
+                                        await _loadDishes();
+                                      } else {
+                                        setState(() {
+                                          dishes = allDishes
+                                              .where((dish) => dish.name
+                                                  .toLowerCase()
+                                                  .contains(value.toLowerCase()))
+                                              .toList();
+                                        });
+                                      }
+                                    },
+                                  ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsets.all(8.0),
-                                  child: Text(dish.price.toStringAsFixed(2)),
+                                  padding: EdgeInsets.all(10.0),
+                                  child: FilterButtonWithPopup(
+                                    label: 'Price',
+                                    onSearch: (value) async {
+                                      if (value.isEmpty) {
+                                        await _loadDishes();
+                                      } else {
+                                        setState(() {
+                                          dishes = allDishes
+                                              .where((dish) => dish.price
+                                                  .toString()
+                                                  .toLowerCase()
+                                                  .contains(value.toLowerCase()))
+                                              .toList();
+                                        });
+                                      }
+                                    },
+                                  ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsets.all(8.0),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      IconButton(
-                                        icon: Icon(Icons.edit),
-                                        onPressed: () => _editDish(dish.id),
-                                      ),
-                                      IconButton(
-                                        icon: Icon(Icons.delete, color: Colors.red),
-                                        onPressed: () => _deleteDish(dish.id),
-                                      ),
-                                    ],
+                                  padding: EdgeInsets.all(10.0),
+                                  child: Text(
+                                    'Image',
+                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(10.0),
+                                  child: Text(
+                                    'Thao tác',
+                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                                   ),
                                 ),
                               ],
+                            ),
+                            ...dishes.map((dish) => TableRow(
+                                  children: [
+                                    Padding(
+                                      padding: EdgeInsets.all(10.0),
+                                      child: Text(dish.id?.toString() ?? 'N/A', style: TextStyle(fontSize: 12)),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.all(10.0),
+                                      child: Text(dish.name, style: TextStyle(fontSize: 12)),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.all(10.0),
+                                      child: Text(dish.price.toStringAsFixed(2), style: TextStyle(fontSize: 12)),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.all(10.0),
+                                      child: dish.imageUrl != null && dish.imageUrl!.isNotEmpty
+                                          ? Image.network(
+                                              dish.imageUrl!,
+                                              width: 40,
+                                              height: 40,
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (context, error, stackTrace) =>
+                                                  Icon(Icons.image_not_supported, size: 40, color: Colors.grey),
+                                              loadingBuilder: (context, child, loadingProgress) {
+                                                if (loadingProgress == null) return child;
+                                                return Center(
+                                                  child: CircularProgressIndicator(
+                                                    value: loadingProgress.expectedTotalBytes != null
+                                                        ? loadingProgress.cumulativeBytesLoaded /
+                                                            loadingProgress.expectedTotalBytes!
+                                                        : null,
+                                                  ),
+                                                );
+                                              },
+                                            )
+                                          : Text('No image', style: TextStyle(fontSize: 12)),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.all(10.0),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          IconButton(
+                                            icon: Icon(Icons.edit, size: 18),
+                                            onPressed: () => _editDish(dish.id),
+                                          ),
+                                          IconButton(
+                                            icon: Icon(Icons.delete, color: Colors.red, size: 18),
+                                            onPressed: () => _deleteDish(dish.id),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                             )).toList(),
-                      ],
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -413,12 +498,12 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
           BottomNavigationBarItem(
               icon: Icon(Icons.person), label: 'Account'),
         ],
-        onTap: (index) {
-          if (index == 0) Navigator.pushNamed(context, '/admin/dashboard');
-          if (index == 1) Navigator.pushNamed(context, '');
+                onTap: (index) async {
+          if (index == 0) return;
+          if (index == 1) Navigator.pushNamed(context, '/cart');
           if (index == 2) print('Like tapped');
           if (index == 3) {
-            if (isLoggedIn) {
+            if (await AuthStatus.isLoggedIn()) {
               Navigator.pushNamed(context, '/userProfile');
             } else {
               Navigator.pushNamed(context, '/login');

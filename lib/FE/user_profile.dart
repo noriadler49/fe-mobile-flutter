@@ -1,104 +1,161 @@
 import 'package:flutter/material.dart';
 import 'package:fe_mobile_flutter/FE/auth_status.dart';
+import 'package:fe_mobile_flutter/models/user_model.dart';
+import 'package:fe_mobile_flutter/services/api_service.dart';
 
-class UserProfileScreen extends StatelessWidget {
-  const UserProfileScreen({super.key});
+class UserProfileScreen extends StatefulWidget {
+  @override
+  _UserProfileScreenState createState() => _UserProfileScreenState();
+}
+
+class _UserProfileScreenState extends State<UserProfileScreen> {
+  User? user;
+  TextEditingController phoneController = TextEditingController();
+  TextEditingController addressController = TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    final accountId = await AuthStatus.getCurrentAccountId();
+    if (accountId == null) {
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+      }
+      return;
+    }
+    setState(() => _isLoading = true);
+    try {
+      user = await ApiService.getProfile(accountId);
+      if (user != null) {
+        phoneController.text = user!.phoneNumber ?? '';
+        addressController.text = user!.address ?? '';
+      } else {
+        throw Exception('User data not found');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading profile: $e'), backgroundColor: Colors.red),
+        );
+        Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Hardcoded user data, matching signup_screen.dart and my_cart.dart
-    const String userName = 'Quan';
-    const String address = 'No.1 Lmain Street';
-    const String phoneNumber = '+84 123456789';
+    if (_isLoading && user == null) {
+      return Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    if (user == null) {
+      return Container(); // Will redirect to login in _loadProfile
+    }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('User Profile', style: TextStyle(color: Colors.white)),
+        title: Text('User Profile', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.red,
         centerTitle: true,
       ),
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.red, Colors.redAccent],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+        child: FutureBuilder<bool>(
+          future: AuthStatus.isLoggedIn(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData || !snapshot.data!) {
+              return ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  DrawerHeader(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.red, Colors.redAccent],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                    child: Text(
+                      'Menu',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.home, color: Colors.red),
+                    title: Text('Home'),
+                    onTap: () => Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false),
+                  ),
+                ],
+              );
+            }
+            return ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                DrawerHeader(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.red, Colors.redAccent],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: Text(
+                    'Menu',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-              ),
-              child: const Text(
-                'Menu',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+                ListTile(
+                  leading: Icon(Icons.home, color: Colors.red),
+                  title: Text('Home'),
+                  onTap: () => Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false),
                 ),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.home, color: Colors.red),
-              title: const Text('Home'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.shopping_cart, color: Colors.red),
-              title: const Text('Cart'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/cart');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.favorite, color: Colors.red),
-              title: const Text('Favorites'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/favorites');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.history, color: Colors.red),
-              title: const Text('Order History'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/orderHistory');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings, color: Colors.red),
-              title: const Text('Settings'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/settings');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.contact_support, color: Colors.red),
-              title: const Text('Contact Us'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/contact');
-              },
-            ),
-            if (isLoggedIn)
-              ListTile(
-                leading: const Icon(
-                  Icons.admin_panel_settings,
-                  color: Colors.red,
+                ListTile(
+                  leading: Icon(Icons.shopping_cart, color: Colors.red),
+                  title: Text('Cart'),
+                  onTap: () => Navigator.pushNamed(context, '/cart'),
                 ),
-                title: const Text('Admin Dashboard'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/admin/dashboard');
-                },
-              ),
-          ],
+                ListTile(
+                  leading: Icon(Icons.favorite, color: Colors.red),
+                  title: Text('Favorites'),
+                  onTap: () => Navigator.pushNamed(context, '/favorites'),
+                ),
+                ListTile(
+                  leading: Icon(Icons.history, color: Colors.red),
+                  title: Text('Order History'),
+                  onTap: () => Navigator.pushNamed(context, '/orderHistory'),
+                ),
+                ListTile(
+                  leading: Icon(Icons.settings, color: Colors.red),
+                  title: Text('Settings'),
+                  onTap: () => Navigator.pushNamed(context, '/settings'),
+                ),
+                ListTile(
+                  leading: Icon(Icons.contact_support, color: Colors.red),
+                  title: Text('Contact Us'),
+                  onTap: () => Navigator.pushNamed(context, '/contact'),
+                ),
+                if (user?.accountRole == 'admin')
+                  ListTile(
+                    leading: Icon(Icons.admin_panel_settings, color: Colors.red),
+                    title: Text('Admin Dashboard'),
+                    onTap: () => Navigator.pushNamed(context, '/admin/dashboard'),
+                  ),
+              ],
+            );
+          },
         ),
       ),
       body: SafeArea(
@@ -107,7 +164,7 @@ class UserProfileScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Profile Information',
                 style: TextStyle(
                   fontSize: 20,
@@ -115,7 +172,7 @@ class UserProfileScreen extends StatelessWidget {
                   decoration: TextDecoration.underline,
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               Card(
                 elevation: 3,
                 shape: RoundedRectangleBorder(
@@ -128,33 +185,43 @@ class UserProfileScreen extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.person, color: Colors.red, size: 24),
-                          const SizedBox(width: 12),
+                          Icon(Icons.person, color: Colors.red, size: 24),
+                          SizedBox(width: 12),
                           Text(
-                            'Name: $userName',
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            'Username: ${user?.accountUsername}',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12),
                       Row(
                         children: [
-                          const Icon(Icons.home, color: Colors.red, size: 24),
-                          const SizedBox(width: 12),
-                          Text(
-                            'Address: $address',
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          Icon(Icons.phone, color: Colors.red, size: 24),
+                          SizedBox(width: 12),
+                          Flexible(
+                            child: TextField(
+                              controller: phoneController,
+                              decoration: InputDecoration(
+                                hintText: 'Phone Number',
+                                border: InputBorder.none,
+                              ),
+                            ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12),
                       Row(
                         children: [
-                          const Icon(Icons.phone, color: Colors.red, size: 24),
-                          const SizedBox(width: 12),
-                          Text(
-                            'Phone: $phoneNumber',
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          Icon(Icons.home, color: Colors.red, size: 24),
+                          SizedBox(width: 12),
+                          Flexible(
+                            child: TextField(
+                              controller: addressController,
+                              decoration: InputDecoration(
+                                hintText: 'Address',
+                                border: InputBorder.none,
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -162,21 +229,82 @@ class UserProfileScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               Center(
                 child: ElevatedButton(
-                  onPressed: () {
-                    isLoggedIn = false; // Simulate logout
-                    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+                  onPressed: () async {
+                    if (phoneController.text.isNotEmpty || addressController.text.isNotEmpty) {
+                      setState(() => _isLoading = true);
+                      try {
+                        final updatedUser = User(
+                          accountId: user!.accountId,
+                          accountUsername: user!.accountUsername,
+                          accountPassword: '', // Not updated
+                          phoneNumber: phoneController.text.trim().isNotEmpty ? phoneController.text.trim() : null,
+                          address: addressController.text.trim().isNotEmpty ? addressController.text.trim() : null,
+                          accountRole: user!.accountRole, // Preserve role
+                        );
+                        user = await ApiService.updateProfile(user!.accountId!, updatedUser);
+                        phoneController.text = user?.phoneNumber ?? '';
+                        addressController.text = user?.address ?? '';
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Profile updated!'), backgroundColor: Colors.green),
+                        );
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Error updating profile: $e'), backgroundColor: Colors.red),
+                        );
+                      } finally {
+                        if (mounted) setState(() => _isLoading = false);
+                      }
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    minimumSize: const Size(200, 48),
+                    minimumSize: Size(200, 48),
                   ),
-                  child: const Text(
+                  child: Text(
+                    'Update Profile',
+                    style: TextStyle(fontSize: 16, color: Colors.white),
+                  ),
+                ),
+              ),
+              SizedBox(height: 10),
+              Center(
+                child: ElevatedButton(
+                  onPressed: () async {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: Text('Confirm Logout'),
+                        content: Text('Are you sure you want to log out?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () async {
+                              Navigator.pop(context);
+                              await ApiService.logout(context);
+                            },
+                            child: Text('Logout'),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    minimumSize: Size(200, 48),
+                  ),
+                  child: Text(
                     'Log Out',
                     style: TextStyle(fontSize: 16, color: Colors.white),
                   ),
@@ -190,7 +318,7 @@ class UserProfileScreen extends StatelessWidget {
         selectedItemColor: Colors.red,
         unselectedItemColor: Colors.grey,
         currentIndex: 3, // Highlight Account tab
-        items: const [
+        items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Cart'),
           BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Like'),

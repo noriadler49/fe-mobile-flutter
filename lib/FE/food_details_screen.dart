@@ -130,13 +130,12 @@ class _FoodDetailsScreenState extends State<FoodDetailsScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Like'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],
-        onTap: (index) {
-          if (index == 0) Navigator.pushNamed(context, '/');
+               onTap: (index) async {
+          if (index == 0) return;
           if (index == 1) Navigator.pushNamed(context, '/cart');
           if (index == 2) print('Like tapped');
-                    if (index == 3) {
-
-            if (isLoggedIn) {
+          if (index == 3) {
+            if (await AuthStatus.isLoggedIn()) {
               Navigator.pushNamed(context, '/userProfile');
             } else {
               Navigator.pushNamed(context, '/login');

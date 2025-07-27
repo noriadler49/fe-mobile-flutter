@@ -1,9 +1,17 @@
-import 'package:flutter/material.dart';
-import 'package:fe_mobile_flutter/FE/auth_status.dart';
 
-class LoginScreen extends StatelessWidget {
-  final TextEditingController userController = TextEditingController();
+import 'package:flutter/material.dart';
+import 'package:fe_mobile_flutter/services/api_service.dart';
+
+class LoginScreen extends StatefulWidget {
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController usernameController = TextEditingController();
   final TextEditingController passController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -20,45 +28,53 @@ class LoginScreen extends StatelessWidget {
       ),
       body: Padding(
         padding: EdgeInsets.all(20),
-        child: Column(
-          children: [
-            TextField(
-              controller: userController,
-              decoration: InputDecoration(labelText: "Account ID"),
-            ),
-            TextField(
-              controller: passController,
-              obscureText: true,
-              decoration: InputDecoration(labelText: "Password"),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                String username = userController.text.trim();
-                String password = passController.text.trim();
-                // isLoggedIn = true; // giả lập đăng nhập thành công
-                // Navigator.pushNamed(context, '/cart'); // về giỏ hàng
-                String? route = checkLogin(username, password);
-
-                if (route != null) {
-                  Navigator.pushNamed(context, route);
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text("Invalid username or password"),
-                      backgroundColor: Colors.red,
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextField(
+                controller: usernameController,
+                decoration: InputDecoration(labelText: "Username"),
+              ),
+              TextField(
+                controller: passController,
+                obscureText: true,
+                decoration: InputDecoration(labelText: "Password"),
+              ),
+              SizedBox(height: 20),
+              _isLoading
+                  ? CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: () async {
+                        if (_formKey.currentState!.validate()) {
+                          setState(() => _isLoading = true);
+                          try {
+                            final user = await ApiService.login(
+                              usernameController.text.trim(),
+                              passController.text.trim(),
+                            );
+                            Navigator.pushNamed(context, '/');
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(e.toString()),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          } finally {
+                            setState(() => _isLoading = false);
+                          }
+                        }
+                      },
+                      child: Text("Login"),
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                     ),
-                  );
-                }
-              },
-              child: Text("Login"),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pushNamed(context, '/signup'),
-              child: Text("Register?"),
-            ),
-          ],
+              TextButton(
+                onPressed: () => Navigator.pushNamed(context, '/signup'),
+                child: Text("Register?"),
+              ),
+            ],
+          ),
         ),
       ),
     );

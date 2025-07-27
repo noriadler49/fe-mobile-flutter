@@ -1,14 +1,50 @@
+# Built application files
+*.apk
+*.ap_
+*.aab
+
+# Files for the ART/Dalvik VM
+*.dex
+
+# Java class files
+*.class
+
+# Generated files
+build/
+outputs/
+.release/
+app/release/
+.cxx/
+GeneratedPluginRegistrant.java
+
+# Gradle
+.gradle/
 gradle-wrapper.jar
-/.gradle
-/captures/
 /gradlew
 /gradlew.bat
-/local.properties
-GeneratedPluginRegistrant.java
-.cxx/
 
-# Remember to never publicly share your keystore.
-# See https://flutter.dev/to/reference-keystore
+# Local configuration files (IDE-specific)
+.idea/
+*.iml
+local.properties
+
+# Capture files
+captures/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Android Studio created files
+external/
+navigation/
+.navigation/
+
+# Miscellaneous
+*.log
+*.iws
+
+# Keystore files (never share publicly)
 key.properties
 **/*.keystore
 **/*.jks

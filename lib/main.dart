@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:fe_mobile_flutter/FE/auth_status.dart';
 import 'FE/home_screen.dart';
@@ -21,13 +22,34 @@ void main() {
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  String _initialRoute = '/';
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAuthStatus();
+  }
+
+  Future<void> _checkAuthStatus() async {
+    final isLoggedIn = await AuthStatus.isLoggedIn();
+    if (!mounted) return;
+    setState(() {
+      _initialRoute = isLoggedIn ? '/' : '/login';
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'FOS Food App',
       debugShowCheckedModeBanner: false,
-      initialRoute: '/',
+      initialRoute: _initialRoute,
       routes: {
         '/': (context) => HomeScreen(),
         '/deals': (context) => FoodDealScreen(),
@@ -36,7 +58,7 @@ class MyApp extends StatelessWidget {
         '/signup': (context) => SignUpScreen(),
         '/login': (context) => LoginScreen(),
         '/address': (context) => AddressScreen(),
-        '/orderHistory': (context) => OrderPage(),
+        //'/orderHistory': (context) => OrderPage(),
         '/userProfile': (context) => UserProfileScreen(),
         '/admin/dashboard': (context) => AdminDashboardScreen(),
         '/admin/orders': (context) => AllOrdersScreen(),
@@ -82,6 +104,7 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
 // import 'package:flutter/material.dart';
 // import 'FE/checkout_screen.dart';
 // import 'FE/address_screen.dart';
