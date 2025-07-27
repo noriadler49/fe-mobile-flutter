@@ -1,6 +1,6 @@
-
 import 'package:flutter/material.dart';
 import 'package:fe_mobile_flutter/services/api_service.dart';
+import 'package:fe_mobile_flutter/fe/auth_status.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -53,7 +53,23 @@ class _LoginScreenState extends State<LoginScreen> {
                               usernameController.text.trim(),
                               passController.text.trim(),
                             );
-                            Navigator.pushNamed(context, '/');
+
+                            // ✅ Lưu trạng thái đăng nhập
+                            await AuthStatus.setUserRole(
+                              user.accountRole ?? 'user',
+                            );
+                            await AuthStatus.setUserLoggedIn(true);
+                            await AuthStatus.setAccountId(user.accountId ?? 0);
+
+                            // Điều hướng theo vai trò
+                            if (user.accountRole == 'admin') {
+                              Navigator.pushReplacementNamed(
+                                context,
+                                '/admin/dashboard',
+                              );
+                            } else {
+                              Navigator.pushReplacementNamed(context, '/');
+                            }
                           } catch (e) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
@@ -67,7 +83,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         }
                       },
                       child: Text("Login"),
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                      ),
                     ),
               TextButton(
                 onPressed: () => Navigator.pushNamed(context, '/signup'),

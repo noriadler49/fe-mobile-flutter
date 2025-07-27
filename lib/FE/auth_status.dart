@@ -15,7 +15,9 @@ class AuthStatus {
 
   static Future<String?> getUserRole() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('userRole'); // Returns "admin" or "user", or null if not set
+    return prefs.getString(
+      'userRole',
+    ); // Returns "admin" or "user", or null if not set
   }
 
   static Future<void> clearAuthState() async {
@@ -28,5 +30,15 @@ class AuthStatus {
   static Future<void> setUserRole(String role) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('userRole', role);
+  }
+
+  static Future<void> setUserLoggedIn(bool loggedIn) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isLoggedIn', loggedIn);
+  }
+
+  static Future<void> setAccountId(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('accountId', id);
   }
 }
