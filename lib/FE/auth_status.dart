@@ -21,6 +21,7 @@ class AuthStatus {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('accountId');
   }
+  // xulidenda
 
   static Future<String?> getUserRole() async {
     final prefs = await SharedPreferences.getInstance();
