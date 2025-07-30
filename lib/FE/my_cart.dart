@@ -13,6 +13,11 @@ class _MyCartState extends State<MyCart> {
   final double price = 5.99;
   int quantity = 1;
 
+  Future<bool> checkIsLoggedIn() async {
+    final accountId = await AuthStatus.getCurrentAccountId();
+    return accountId != null; // logged in if there's an ID saved
+  }
+
   void _incrementQuantity() {
     setState(() {
       quantity++;
@@ -167,12 +172,13 @@ class _MyCartState extends State<MyCart> {
           BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Like'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],
-          onTap: (index) async {
-          if (index == 0) return;
+        onTap: (index) async {
+          if (index == 0) Navigator.pushNamed(context, '/');
           if (index == 1) Navigator.pushNamed(context, '/cart');
           if (index == 2) print('Like tapped');
           if (index == 3) {
-            if (await AuthStatus.isLoggedIn()) {
+            bool loggedIn = await AuthStatus.checkIsLoggedIn();
+            if (loggedIn) {
               Navigator.pushNamed(context, '/userProfile');
             } else {
               Navigator.pushNamed(context, '/login');

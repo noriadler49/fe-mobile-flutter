@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:fe_mobile_flutter/services/api_service.dart';
-import 'package:fe_mobile_flutter/fe/auth_status.dart';
+import 'package:fe_mobile_flutter/FE/services/account_service.dart';
+import 'package:fe_mobile_flutter/FE/models1/account.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -8,10 +9,55 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController userController = TextEditingController();
   final TextEditingController passController = TextEditingController();
+  final AccountService _accountService = AccountService();
   bool _isLoading = false;
+
+  Future<void> _handleLogin() async {
+    String username = userController.text.trim();
+    String password = passController.text.trim();
+
+    if (username.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Please enter both username and password"),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      TblAccount? account = await _accountService.login(username, password);
+
+      if (account != null) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setInt('accountId', account.accountId); // ✅ Save accountId
+
+        if (account.accountRole == 'admin') {
+          Navigator.pushNamed(context, '/admin/dashboard');
+        } else {
+          Navigator.pushNamed(context, '/');
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Invalid username or password"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Login error: $e"), backgroundColor: Colors.red),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,71 +74,32 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       body: Padding(
         padding: EdgeInsets.all(20),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextField(
-                controller: usernameController,
-                decoration: InputDecoration(labelText: "Username"),
-              ),
-              TextField(
-                controller: passController,
-                obscureText: true,
-                decoration: InputDecoration(labelText: "Password"),
-              ),
-              SizedBox(height: 20),
-              _isLoading
-                  ? CircularProgressIndicator()
-                  : ElevatedButton(
-                      onPressed: () async {
-                        if (_formKey.currentState!.validate()) {
-                          setState(() => _isLoading = true);
-                          try {
-                            final user = await ApiService.login(
-                              usernameController.text.trim(),
-                              passController.text.trim(),
-                            );
-
-                            // ✅ Lưu trạng thái đăng nhập
-                            await AuthStatus.setUserRole(
-                              user.accountRole ?? 'user',
-                            );
-                            await AuthStatus.setUserLoggedIn(true);
-                            await AuthStatus.setAccountId(user.accountId ?? 0);
-
-                            // Điều hướng theo vai trò
-                            if (user.accountRole == 'admin') {
-                              Navigator.pushReplacementNamed(
-                                context,
-                                '/admin/dashboard',
-                              );
-                            } else {
-                              Navigator.pushReplacementNamed(context, '/');
-                            }
-                          } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(e.toString()),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          } finally {
-                            setState(() => _isLoading = false);
-                          }
-                        }
-                      },
-                      child: Text("Login"),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                      ),
+        child: Column(
+          children: [
+            TextField(
+              controller: userController,
+              decoration: InputDecoration(labelText: "Username"),
+            ),
+            TextField(
+              controller: passController,
+              obscureText: true,
+              decoration: InputDecoration(labelText: "Password"),
+            ),
+            SizedBox(height: 20),
+            _isLoading
+                ? CircularProgressIndicator()
+                : ElevatedButton(
+                    onPressed: _handleLogin,
+                    child: Text("Login"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
                     ),
-              TextButton(
-                onPressed: () => Navigator.pushNamed(context, '/signup'),
-                child: Text("Register?"),
-              ),
-            ],
-          ),
+                  ),
+            TextButton(
+              onPressed: () => Navigator.pushNamed(context, '/signup'),
+              child: Text("Register?"),
+            ),
+          ],
         ),
       ),
     );

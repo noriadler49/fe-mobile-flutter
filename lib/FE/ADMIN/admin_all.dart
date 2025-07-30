@@ -28,6 +28,11 @@ class _AllOrdersScreenState extends State<AllOrdersScreen> {
     _loadOrders();
   }
 
+  Future<bool> checkIsLoggedIn() async {
+    final accountId = await AuthStatus.getCurrentAccountId();
+    return accountId != null; // logged in if there's an ID saved
+  }
+
   // Load orders from JSON file
   Future<void> _loadOrders() async {
     final ordersData = await OrderRepository.loadOrders();
@@ -406,7 +411,8 @@ class _AllOrdersScreenState extends State<AllOrdersScreen> {
           if (index == 1) Navigator.pushNamed(context, '/cart');
           if (index == 2) print('Like tapped');
           if (index == 3) {
-            if (await AuthStatus.isLoggedIn()) {
+            bool loggedIn = await AuthStatus.checkIsLoggedIn();
+            if (loggedIn) {
               Navigator.pushNamed(context, '/userProfile');
             } else {
               Navigator.pushNamed(context, '/login');

@@ -8,6 +8,11 @@ class FoodDealScreen extends StatefulWidget {
   _FoodDealScreenState createState() => _FoodDealScreenState();
 }
 
+Future<bool> checkIsLoggedIn() async {
+  final accountId = await AuthStatus.getCurrentAccountId();
+  return accountId != null; // logged in if there's an ID saved
+}
+
 class _FoodDealScreenState extends State<FoodDealScreen> {
   final List<Map<String, String>> foodDeals = [
     {"title": "From A", "image": "assets/spaghetti.png", "price": "\$8"},
@@ -149,12 +154,12 @@ class _FoodDealScreenState extends State<FoodDealScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Like'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],
-                onTap: (index) async {
-          if (index == 0) return;
+        onTap: (index) async {
+          if (index == 0) Navigator.pushNamed(context, '/');
           if (index == 1) Navigator.pushNamed(context, '/cart');
           if (index == 2) print('Like tapped');
           if (index == 3) {
-            if (await AuthStatus.isLoggedIn()) {
+            if (await checkIsLoggedIn()) {
               Navigator.pushNamed(context, '/userProfile');
             } else {
               Navigator.pushNamed(context, '/login');

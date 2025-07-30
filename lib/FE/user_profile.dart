@@ -20,6 +20,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     _loadProfile();
   }
 
+  Future<bool> checkIsLoggedIn() async {
+    final accountId = await AuthStatus.getCurrentAccountId();
+    return accountId != null; // logged in if there's an ID saved
+  }
+
   Future<void> _loadProfile() async {
     final accountId = await AuthStatus.getCurrentAccountId();
     if (accountId == null) {
@@ -40,7 +45,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading profile: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('Error loading profile: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
         Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
       }
@@ -66,7 +74,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       ),
       drawer: Drawer(
         child: FutureBuilder<bool>(
-          future: AuthStatus.isLoggedIn(),
+          future: checkIsLoggedIn(),
           builder: (context, snapshot) {
             if (!snapshot.hasData || !snapshot.data!) {
               return ListView(
@@ -92,7 +100,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   ListTile(
                     leading: Icon(Icons.home, color: Colors.red),
                     title: Text('Home'),
-                    onTap: () => Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false),
+                    onTap: () => Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      '/',
+                      (route) => false,
+                    ),
                   ),
                 ],
               );
@@ -120,7 +132,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 ListTile(
                   leading: Icon(Icons.home, color: Colors.red),
                   title: Text('Home'),
-                  onTap: () => Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false),
+                  onTap: () => Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    '/',
+                    (route) => false,
+                  ),
                 ),
                 ListTile(
                   leading: Icon(Icons.shopping_cart, color: Colors.red),
@@ -149,9 +165,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 ),
                 if (user?.accountRole == 'admin')
                   ListTile(
-                    leading: Icon(Icons.admin_panel_settings, color: Colors.red),
+                    leading: Icon(
+                      Icons.admin_panel_settings,
+                      color: Colors.red,
+                    ),
                     title: Text('Admin Dashboard'),
-                    onTap: () => Navigator.pushNamed(context, '/admin/dashboard'),
+                    onTap: () =>
+                        Navigator.pushNamed(context, '/admin/dashboard'),
                   ),
               ],
             );
@@ -189,7 +209,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           SizedBox(width: 12),
                           Text(
                             'Username: ${user?.accountUsername}',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ],
                       ),
@@ -233,26 +256,40 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               Center(
                 child: ElevatedButton(
                   onPressed: () async {
-                    if (phoneController.text.isNotEmpty || addressController.text.isNotEmpty) {
+                    if (phoneController.text.isNotEmpty ||
+                        addressController.text.isNotEmpty) {
                       setState(() => _isLoading = true);
                       try {
                         final updatedUser = User(
                           accountId: user!.accountId,
                           accountUsername: user!.accountUsername,
                           accountPassword: '', // Not updated
-                          phoneNumber: phoneController.text.trim().isNotEmpty ? phoneController.text.trim() : null,
-                          address: addressController.text.trim().isNotEmpty ? addressController.text.trim() : null,
+                          phoneNumber: phoneController.text.trim().isNotEmpty
+                              ? phoneController.text.trim()
+                              : null,
+                          address: addressController.text.trim().isNotEmpty
+                              ? addressController.text.trim()
+                              : null,
                           accountRole: user!.accountRole, // Preserve role
                         );
-                        user = await ApiService.updateProfile(user!.accountId!, updatedUser);
+                        user = await ApiService.updateProfile(
+                          user!.accountId!,
+                          updatedUser,
+                        );
                         phoneController.text = user?.phoneNumber ?? '';
                         addressController.text = user?.address ?? '';
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Profile updated!'), backgroundColor: Colors.green),
+                          SnackBar(
+                            content: Text('Profile updated!'),
+                            backgroundColor: Colors.green,
+                          ),
                         );
                       } catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Error updating profile: $e'), backgroundColor: Colors.red),
+                          SnackBar(
+                            content: Text('Error updating profile: $e'),
+                            backgroundColor: Colors.red,
+                          ),
                         );
                       } finally {
                         if (mounted) setState(() => _isLoading = false);
@@ -320,7 +357,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         currentIndex: 3, // Highlight Account tab
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Cart'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_cart),
+            label: 'Cart',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Like'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],

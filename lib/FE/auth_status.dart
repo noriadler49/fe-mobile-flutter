@@ -3,14 +3,23 @@ import 'package:flutter/material.dart';
 import 'package:fe_mobile_flutter/services/api_service.dart';
 
 class AuthStatus {
-  static Future<bool> isLoggedIn() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('isLoggedIn') ?? false;
+  // static Future<bool> isLoggedIn() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   return prefs.getBool('isLoggedIn') ?? false;
+  // }
+  static Future<bool> checkIsLoggedIn() async {
+    final accountId = await getCurrentAccountId();
+    return accountId != null;
   }
 
   static Future<int?> getCurrentAccountId() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getInt('accountId');
+    return prefs.getInt('accountId'); // or whatever key you use
+  }
+
+  static Future<void> logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('accountId');
   }
 
   static Future<String?> getUserRole() async {

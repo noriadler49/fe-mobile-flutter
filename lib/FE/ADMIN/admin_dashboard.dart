@@ -232,7 +232,8 @@ class AdminDashboardScreen extends StatelessWidget {
           if (index == 1) Navigator.pushNamed(context, '/cart');
           if (index == 2) print('Like tapped');
           if (index == 3) {
-            if (await AuthStatus.isLoggedIn()) {
+            bool loggedIn = await AuthStatus.checkIsLoggedIn();
+            if (loggedIn) {
               Navigator.pushNamed(context, '/userProfile');
             } else {
               Navigator.pushNamed(context, '/login');

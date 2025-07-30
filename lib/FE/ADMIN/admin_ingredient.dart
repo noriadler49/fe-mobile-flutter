@@ -8,7 +8,8 @@ class ManageIngredientsScreen extends StatefulWidget {
   const ManageIngredientsScreen({super.key});
 
   @override
-  _ManageIngredientsScreenState createState() => _ManageIngredientsScreenState();
+  _ManageIngredientsScreenState createState() =>
+      _ManageIngredientsScreenState();
 }
 
 class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
@@ -24,15 +25,17 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
 
   Future<void> _loadIngredients({String query = ''}) async {
     try {
-      final fetchedIngredients = await ApiService.fetchIngredients(query: query);
+      final fetchedIngredients = await ApiService.fetchIngredients(
+        query: query,
+      );
       setState(() {
         ingredients = fetchedIngredients;
         allIngredients = List.from(ingredients);
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading ingredients: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error loading ingredients: $e')));
     }
   }
 
@@ -48,15 +51,15 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
 
     try {
       await ApiService.createIngredient(Ingredient(name: name));
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ingredient added successfully')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Ingredient added successfully')));
       _nameController.clear();
       await _loadIngredients();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
   }
 
@@ -68,9 +71,9 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
       );
       await _loadIngredients();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error deleting ingredient: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error deleting ingredient: $e')));
     }
   }
 
@@ -196,9 +199,7 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
                   children: [
                     TextField(
                       controller: _nameController,
-                      decoration: InputDecoration(
-                        labelText: 'Ingredient Name',
-                      ),
+                      decoration: InputDecoration(labelText: 'Ingredient Name'),
                     ),
                     SizedBox(height: 16),
                     ElevatedButton(
@@ -274,7 +275,9 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
                                 children: [
                                   Padding(
                                     padding: EdgeInsets.all(8.0),
-                                    child: Text(ingredient.id?.toString() ?? 'N/A'),
+                                    child: Text(
+                                      ingredient.id?.toString() ?? 'N/A',
+                                    ),
                                   ),
                                   Padding(
                                     padding: EdgeInsets.all(8.0),
@@ -290,9 +293,8 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
                                             Icons.delete,
                                             color: Colors.red,
                                           ),
-                                          onPressed: () => _deleteIngredient(
-                                            ingredient.id!,
-                                          ),
+                                          onPressed: () =>
+                                              _deleteIngredient(ingredient.id!),
                                         ),
                                       ],
                                     ),
@@ -327,7 +329,8 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
           if (index == 1) Navigator.pushNamed(context, '/cart');
           if (index == 2) print('Like tapped');
           if (index == 3) {
-            if (await AuthStatus.isLoggedIn()) {
+            bool loggedIn = await AuthStatus.checkIsLoggedIn();
+            if (loggedIn) {
               Navigator.pushNamed(context, '/userProfile');
             } else {
               Navigator.pushNamed(context, '/login');

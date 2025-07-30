@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:fe_mobile_flutter/models/user_model.dart';
 import 'package:fe_mobile_flutter/services/api_service.dart';
@@ -29,13 +28,30 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 SizedBox(height: 20),
                 Icon(Icons.star, color: Colors.red, size: 80),
                 SizedBox(height: 30),
-                buildInputField(Icons.person, "Username", usernameController,
-                    validator: (value) => value!.isEmpty ? 'Username is required' : null),
+                buildInputField(
+                  Icons.person,
+                  "Username",
+                  usernameController,
+                  validator: (value) =>
+                      value!.isEmpty ? 'Username is required' : null,
+                ),
                 buildInputField(Icons.home, "Address", addressController),
-                buildInputField(Icons.phone, "Phone Number", phoneController,
-                    validator: (value) => value!.isEmpty ? 'Phone is required' : null),
-                buildInputField(Icons.lock, "Password", passwordController, obscure: true,
-                    validator: (value) => value!.length < 6 ? 'Password must be at least 6 chars' : null),
+                buildInputField(
+                  Icons.phone,
+                  "Phone Number",
+                  phoneController,
+                  validator: (value) =>
+                      value!.isEmpty ? 'Phone is required' : null,
+                ),
+                buildInputField(
+                  Icons.lock,
+                  "Password",
+                  passwordController,
+                  obscure: true,
+                  validator: (value) => value!.length < 6
+                      ? 'Password must be at least 6 chars'
+                      : null,
+                ),
                 SizedBox(height: 20),
                 _isLoading
                     ? CircularProgressIndicator()
@@ -47,14 +63,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               final user = User(
                                 accountUsername: usernameController.text.trim(),
                                 accountPassword: passwordController.text.trim(),
-                                phoneNumber: phoneController.text.trim().isNotEmpty ? phoneController.text.trim() : null,
-                                address: addressController.text.trim().isNotEmpty ? addressController.text.trim() : null,
+                                phoneNumber:
+                                    phoneController.text.trim().isNotEmpty
+                                    ? phoneController.text.trim()
+                                    : null,
+                                address:
+                                    addressController.text.trim().isNotEmpty
+                                    ? addressController.text.trim()
+                                    : null,
                               );
                               await ApiService.register(user);
                               Navigator.pushNamed(context, '/login');
                             } catch (e) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+                                SnackBar(
+                                  content: Text(e.toString()),
+                                  backgroundColor: Colors.red,
+                                ),
                               );
                             } finally {
                               setState(() => _isLoading = false);
@@ -63,7 +88,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,
-                          padding: EdgeInsets.symmetric(horizontal: 60, vertical: 15),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 60,
+                            vertical: 15,
+                          ),
                         ),
                         child: Text("Create an account"),
                       ),
@@ -78,7 +106,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     Navigator.pushNamed(context, '/login');
                   },
                   child: Text("Already have an account? Log In"),
-                )
+                ),
               ],
             ),
           ),
@@ -87,8 +115,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  Widget buildInputField(IconData icon, String label, TextEditingController controller,
-      {bool obscure = false, String? Function(String?)? validator}) {
+  Widget buildInputField(
+    IconData icon,
+    String label,
+    TextEditingController controller, {
+    bool obscure = false,
+    String? Function(String?)? validator,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextFormField(

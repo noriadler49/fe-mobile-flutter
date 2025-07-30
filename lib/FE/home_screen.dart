@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:fe_mobile_flutter/fe/admin/admin_search_button.dart';
 import 'package:fe_mobile_flutter/FE/auth_status.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert'; // For JSON parsing if needed
 
+import 'package:fe_mobile_flutter/FE/services/dish_service.dart';
+import 'package:fe_mobile_flutter/FE/models1/dish.dart';
+import 'package:fe_mobile_flutter/FE/models1/dish_dto.dart';
+
+// import 'dart:convert';
+// import 'package:http/http.dart' as http;
 class HomeScreen extends StatefulWidget {
   HomeScreen({super.key});
 
@@ -10,13 +18,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String? _userRole;
-  List<Map<String, String>> foods = [
-    {"name": "Spaghetti", "price": "\$8", "image": "assets/spaghetti.png"},
-    {"name": "Burger", "price": "\$6", "image": "assets/burger.png"},
-    {"name": "Pizza", "price": "\$9", "image": "assets/pizza.png"},
-  ];
-  List<Map<String, String>> allFoods = [];
+  List<DishDto> foods = [];
+  List<DishDto> allFoods = [];
   final PageController _pageController = PageController(viewportFraction: 0.85);
   bool _isSearchBarVisible = false;
   final TextEditingController _searchController = TextEditingController();
@@ -24,16 +27,19 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    allFoods = List.from(foods);
-    _loadUserRole();
+    loadDishes(); // fetch real dish data
   }
 
-  Future<void> _loadUserRole() async {
-    final role = await AuthStatus.getUserRole();
-    if (mounted) {
+  Future<void> loadDishes() async {
+    try {
+      final dishService = DishService();
+      final dishList = await dishService.fetchAllDishes();
       setState(() {
-        _userRole = role;
+        foods = dishList;
+        allFoods = List.from(dishList);
       });
+    } catch (e) {
+      print('Error loading dishes: $e');
     }
   }
 
@@ -41,106 +47,67 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: Drawer(
-        child: FutureBuilder<bool>(
-          future: AuthStatus.isLoggedIn(),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData || !snapshot.data!) {
-              return ListView(
-                padding: EdgeInsets.zero,
-                children: [
-                  DrawerHeader(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Colors.red, Colors.redAccent],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                    ),
-                    child: Text(
-                      'Menu',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.home, color: Colors.red),
-                    title: Text('Home'),
-                    onTap: () => Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false),
-                  ),
-                ],
-              );
-            }
-            return ListView(
-              padding: EdgeInsets.zero,
-              children: [
-                DrawerHeader(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.red, Colors.redAccent],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                  ),
-                  child: Text(
-                    'Menu',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.red, Colors.redAccent],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-                ListTile(
-                  leading: Icon(Icons.home, color: Colors.red),
-                  title: Text('Home'),
-                  onTap: () => Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false),
+              ),
+              child: Text(
+                'Menu',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
                 ),
-                ListTile(
-                  leading: Icon(Icons.shopping_cart, color: Colors.red),
-                  title: Text('Cart'),
-                  onTap: () => Navigator.pushNamed(context, '/cart'),
-                ),
-                ListTile(
-                  leading: Icon(Icons.favorite, color: Colors.red),
-                  title: Text('Favorites'),
-                  onTap: () => Navigator.pushNamed(context, '/favorites'),
-                ),
-                ListTile(
-                  leading: Icon(Icons.history, color: Colors.red),
-                  title: Text('Order History'),
-                  onTap: () => Navigator.pushNamed(context, '/orderHistory'),
-                ),
-                ListTile(
-                  leading: Icon(Icons.settings, color: Colors.red),
-                  title: Text('Settings'),
-                  onTap: () => Navigator.pushNamed(context, '/settings'),
-                ),
-                ListTile(
-                  leading: Icon(Icons.contact_support, color: Colors.red),
-                  title: Text('Contact Us'),
-                  onTap: () => Navigator.pushNamed(context, '/contact'),
-                ),
-                if (_userRole == 'admin')
-                  ListTile(
-                    leading: Icon(Icons.admin_panel_settings, color: Colors.red),
-                    title: Text('Admin Dashboard'),
-                    onTap: () => Navigator.pushNamed(context, '/admin/dashboard'),
-                  ),
-                ListTile(
-                  leading: Icon(Icons.logout, color: Colors.red),
-                  title: Text('Logout'),
-                  onTap: () async {
-                    await AuthStatus.clearAuthState();
-                    Navigator.pop(context);
-                    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-                  },
-                ),
-              ],
-            );
-          },
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.restaurant_menu, color: Colors.red),
+              title: Text('Menu'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/menu');
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.favorite, color: Colors.red),
+              title: Text('Favorites'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/favorites');
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.history, color: Colors.red),
+              title: Text('Order History'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/orderHistory');
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.settings, color: Colors.red),
+              title: Text('Settings'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/settings');
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.contact_support, color: Colors.red),
+              title: Text('Contact Us'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/contact');
+              },
+            ),
+          ],
         ),
       ),
       body: SafeArea(
@@ -225,24 +192,26 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: PageView(
                         controller: _pageController,
                         physics: ClampingScrollPhysics(),
-                        children: foods.map((food) {
+                        children: foods.map((dish) {
                           return GestureDetector(
                             onTap: () {
                               Navigator.pushNamed(
                                 context,
                                 '/foodDetail',
                                 arguments: {
-                                  'name': food['name']!,
-                                  'price': food['price']!,
-                                  'image': food['image']!,
+                                  'name': dish.dishName,
+                                  'price': dish.dishPrice?.toString() ?? '',
+                                  'image':
+                                      dish.dishImageUrl ??
+                                      '', // You may need default image fallback
                                 },
                               );
                             },
                             child: _buildFoodItem(
                               context,
-                              food['image']!,
-                              food['name']!,
-                              food['price']!.replaceAll('\$', ''),
+                              'assets/${dish.dishImageUrl ?? 'burger.png'}', // nếu là ảnh local
+                              dish.dishName,
+                              dish.dishPrice?.toString() ?? '',
                             ),
                           );
                         }).toList(),
@@ -270,10 +239,12 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: Colors.red,
         unselectedItemColor: Colors.grey,
-        currentIndex: 0, // Default to Home
-        items: [
+        items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Cart'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_cart),
+            label: 'Cart',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Like'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],
@@ -282,17 +253,12 @@ class _HomeScreenState extends State<HomeScreen> {
           if (index == 1) Navigator.pushNamed(context, '/cart');
           if (index == 2) print('Like tapped');
           if (index == 3) {
-            final isLoggedIn = await AuthStatus.isLoggedIn();
-            if (isLoggedIn) {
-              final accountId = await AuthStatus.getCurrentAccountId();
-              if (accountId != null) {
-                Navigator.pushNamed(context, '/userProfile');
-              } else {
-                Navigator.pushNamed(context, '/login');
-              }
-            } else {
-              Navigator.pushNamed(context, '/login');
-            }
+            // bool loggedIn = await AuthStatus.checkIsLoggedIn();
+            // if (loggedIn) {
+            //   Navigator.pushNamed(context, '/userProfile');
+            // } else {
+            Navigator.pushNamed(context, '/login');
+            // }
           }
         },
       ),
@@ -314,11 +280,20 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+
               child: Image.asset(
                 imagePath,
-                width: double.infinity,
-                height: 180,
+                height: 100,
+                width: 100,
                 fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    height: 100,
+                    width: 100,
+                    color: Colors.grey[300],
+                    child: const Icon(Icons.image_not_supported),
+                  );
+                },
               ),
             ),
             Padding(
@@ -405,11 +380,12 @@ class _HomeScreenState extends State<HomeScreen> {
               onChanged: (value) {
                 final query = value.toLowerCase();
                 setState(() {
-                  foods = allFoods.where((food) {
-                    return food['name']!.toLowerCase().contains(query);
+                  foods = allFoods.where((dish) {
+                    return dish.dishName.toLowerCase().contains(query);
                   }).toList();
                 });
               },
+
               decoration: InputDecoration(
                 hintText: searchHintText ?? 'Search...',
                 hintStyle: TextStyle(color: Colors.white70),

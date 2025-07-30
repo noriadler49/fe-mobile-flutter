@@ -19,6 +19,11 @@ class FoodDetailsScreen extends StatefulWidget {
 class _FoodDetailsScreenState extends State<FoodDetailsScreen> {
   bool _isSearchBarVisible = false;
 
+  Future<bool> checkIsLoggedIn() async {
+    final accountId = await AuthStatus.getCurrentAccountId();
+    return accountId != null; // logged in if there's an ID saved
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -130,12 +135,12 @@ class _FoodDetailsScreenState extends State<FoodDetailsScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Like'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],
-               onTap: (index) async {
-          if (index == 0) return;
+        onTap: (index) async {
+          if (index == 0) Navigator.pushNamed(context, '/');
           if (index == 1) Navigator.pushNamed(context, '/cart');
           if (index == 2) print('Like tapped');
           if (index == 3) {
-            if (await AuthStatus.isLoggedIn()) {
+            if (await checkIsLoggedIn()) {
               Navigator.pushNamed(context, '/userProfile');
             } else {
               Navigator.pushNamed(context, '/login');
