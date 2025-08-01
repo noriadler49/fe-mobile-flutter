@@ -1,9 +1,12 @@
+import 'package:fe_mobile_flutter/FE/auth_status.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_mobile_flutter/FE/services/account_service.dart';
 import 'package:fe_mobile_flutter/FE/models1/account.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
@@ -13,6 +16,35 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController passController = TextEditingController();
   final AccountService _accountService = AccountService();
   bool _isLoading = false;
+
+  void _showTopNotification(BuildContext context, String message) {
+    final overlay = Overlay.of(context);
+    final overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: MediaQuery.of(context).padding.top + 10,
+        left: 20,
+        right: 20,
+        child: Material(
+          elevation: 5,
+          borderRadius: BorderRadius.circular(8),
+          color: Colors.green,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            child: Text(
+              message,
+              style: const TextStyle(color: Colors.white, fontSize: 16),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    overlay.insert(overlayEntry);
+    Future.delayed(const Duration(seconds: 2), () {
+      overlayEntry.remove();
+    });
+  }
 
   Future<void> _handleLogin() async {
     String username = userController.text.trim();
@@ -35,12 +67,37 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (account != null) {
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setInt('accountId', account.accountId); // ✅ Save accountId
+        await prefs.setInt('accountId', account.accountId);
+        await prefs.setBool('isLoggedIn', true);
+        await prefs.setString('userRole', account.accountRole ?? 'user');
+
+        // Format role và username
+        String roleFirstWord = (account.accountRole ?? 'user').split(' ').first;
+        String usernameFirstWord = account.accountUsername.split(' ').first;
+
+        String formattedRole =
+            roleFirstWord[0].toUpperCase() +
+            roleFirstWord.substring(1).toLowerCase();
+        String formattedUsername =
+            usernameFirstWord[0].toUpperCase() +
+            usernameFirstWord.substring(1).toLowerCase();
+
+        // ✅ Show top notification
+        _showTopNotification(
+          context,
+          "Welcome, $formattedRole $formattedUsername",
+        );
+
+        await Future.delayed(const Duration(milliseconds: 1000));
 
         if (account.accountRole == 'admin') {
-          Navigator.pushNamed(context, '/admin/dashboard');
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/admin/dashboard',
+            (route) => false,
+          );
         } else {
-          Navigator.pushNamed(context, '/');
+          Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -51,11 +108,12 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } catch (e) {
+      print('Login error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Login error: $e"), backgroundColor: Colors.red),
       );
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -90,10 +148,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 ? CircularProgressIndicator()
                 : ElevatedButton(
                     onPressed: _handleLogin,
-                    child: Text("Login"),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                     ),
+                    child: Text("Login"),
                   ),
             TextButton(
               onPressed: () => Navigator.pushNamed(context, '/signup'),

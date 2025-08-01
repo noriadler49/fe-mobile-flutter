@@ -16,6 +16,8 @@ import 'FE/ADMIN/admin_dashboard.dart';
 import 'FE/ADMIN/admin_all.dart';
 import 'FE/ADMIN/admin_add.dart';
 import 'FE/ADMIN/admin_ingredient.dart';
+import 'FE/models1/dish_dto.dart';
+import 'FE/order_follow.dart';
 
 void main() {
   runApp(MyApp());
@@ -58,6 +60,7 @@ class _MyAppState extends State<MyApp> {
         '/login': (context) => LoginScreen(),
         '/address': (context) => AddressScreen(),
         // '/orderHistory': (context) => OrderPage(),
+        '/orderFollow': (context) => OrderFollowScreen(),
         '/userProfile': (context) => UserProfileScreen(),
         '/admin/dashboard': (context) => AdminDashboardScreen(),
         '/admin/orders': (context) => AllOrdersScreen(),
@@ -66,26 +69,24 @@ class _MyAppState extends State<MyApp> {
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/foodDetail') {
-          final args = Map<String, String>.from(settings.arguments as Map);
+          final args = settings.arguments as Map<String, dynamic>;
+          final int foodId = args['dishId'];
+          final String? image = args['image'];
           return MaterialPageRoute(
-            builder: (context) => FoodDetailsScreen(
-              name: args['name']!,
-              price: args['price']!,
-              image: args['image']!,
-            ),
+            builder: (context) =>
+                FoodDetailsScreen(dishId: foodId, image: image),
           );
         }
+
         if (settings.name == '/checkout') {
-          final args = Map<String, dynamic>.from(settings.arguments as Map);
+          final args = settings.arguments as Map<String, dynamic>;
           return MaterialPageRoute(
             builder: (context) => CheckoutScreen(
-              userName: args['userName'],
-              phoneNumber: args['phoneNumber'],
-              address: args['address'],
               cartItems: List<Map<String, dynamic>>.from(args['cartItems']),
             ),
           );
         }
+
         if (settings.name == '/orderDetails') {
           final args = Map<String, dynamic>.from(settings.arguments as Map);
           return MaterialPageRoute(

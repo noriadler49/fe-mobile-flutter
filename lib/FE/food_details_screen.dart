@@ -1,128 +1,242 @@
 import 'package:flutter/material.dart';
+import 'package:fe_mobile_flutter/FE/services/dish_service.dart';
+import 'package:fe_mobile_flutter/FE/models1/dish_dto.dart';
 import 'package:fe_mobile_flutter/FE/auth_status.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fe_mobile_flutter/FE/services/cart_item_service.dart';
+import 'package:fe_mobile_flutter/FE/models1/cartitem.dart';
 
 class FoodDetailsScreen extends StatefulWidget {
-  final String name;
-  final String price;
-  final String image;
+  final int dishId;
+  final String? image;
 
-  FoodDetailsScreen({
-    required this.name,
-    required this.price,
-    required this.image,
-  });
+  const FoodDetailsScreen({Key? key, required this.dishId, this.image})
+    : super(key: key);
 
   @override
   _FoodDetailsScreenState createState() => _FoodDetailsScreenState();
 }
 
 class _FoodDetailsScreenState extends State<FoodDetailsScreen> {
+  final CartItemService _cartService = CartItemService();
+  int _quantity = 1;
+  DishDto? _dish;
+  bool _isLoading = true;
   bool _isSearchBarVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchDishDetail();
+  }
+
+  Future<void> _fetchDishDetail() async {
+    try {
+      final dish = await DishService().fetchDishById(widget.dishId);
+      setState(() {
+        _dish = dish;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Error fetching dish: $e');
+    }
+  }
 
   Future<bool> checkIsLoggedIn() async {
     final accountId = await AuthStatus.getCurrentAccountId();
-    return accountId != null; // logged in if there's an ID saved
+    return accountId != null;
+  }
+
+  Future<void> _addToCart() async {
+    if (_quantity < 1) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Quantity must be at least 1"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    final prefs = await SharedPreferences.getInstance();
+    final accountId = prefs.getInt('accountId');
+
+    if (accountId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Please login to add to cart"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final result = await _cartService.addToCart(
+      dishId: widget.dishId,
+      quantity: _quantity,
+      accountId: accountId,
+    );
+
+    if (result != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Added to cart successfully"),
+          backgroundColor: Colors.green,
+          duration: Duration(milliseconds: 800), // ngắn thôi
+        ),
+      );
+
+      await Future.delayed(
+        Duration(milliseconds: 300),
+      ); // chờ snack hiển thị xíu
+      try {
+        Navigator.pushNamed(context, '/cart');
+      } catch (e) {
+        print("Navigation error: $e");
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Failed to add to cart"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              // Header
-              buildHeader(
-                title: 'MENU',
-                rightIcons: [
-                  IconButton(
-                    icon: Icon(
-                      Icons.shopping_cart,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/cart');
-                    },
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.menu, color: Colors.white, size: 20),
-                    onPressed: () {
-                      print('Menu tapped');
-                    },
-                  ),
-                ],
-                isSearchBarVisible: _isSearchBarVisible,
-                onSearchPressed: () {
-                  setState(() {
-                    _isSearchBarVisible = !_isSearchBarVisible;
-                  });
-                },
-                searchHintText: 'Search menu...',
-              ),
-              // Food Details
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16.0,
-                  vertical: 12.0,
-                ),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : SafeArea(
+              child: SingleChildScrollView(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.asset(
-                        widget.image,
-                        width: MediaQuery.of(context).size.width * 0.9,
-                        height: 200,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    SizedBox(height: 12),
-                    Text(
-                      widget.name,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      widget.price,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                    ),
-                    SizedBox(height: 12),
-                    Text(
-                      "Ingredients: etc.",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                    ),
-                    SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/cart');
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                    // HEADER
+                    buildHeader(
+                      title: 'MENU',
+                      rightIcons: [
+                        IconButton(
+                          icon: Icon(
+                            Icons.shopping_cart,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/cart');
+                          },
                         ),
-                        minimumSize: Size(200, 48),
+                        IconButton(
+                          icon: Icon(Icons.menu, color: Colors.white, size: 20),
+                          onPressed: () {
+                            print('Menu tapped');
+                          },
+                        ),
+                      ],
+                      isSearchBarVisible: _isSearchBarVisible,
+                      onSearchPressed: () {
+                        setState(() {
+                          _isSearchBarVisible = !_isSearchBarVisible;
+                        });
+                      },
+                      searchHintText: 'Search menu...',
+                    ),
+
+                    // CONTENT
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 12.0,
                       ),
-                      child: Text(
-                        "Add to Cart",
-                        style: TextStyle(fontSize: 16, color: Colors.white),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.asset(
+                              'assets/${_dish?.dishImageUrl ?? widget.image ?? 'default.png'}',
+                              width: MediaQuery.of(context).size.width * 0.9,
+                              height: 200,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          SizedBox(height: 12),
+                          Text(
+                            _dish?.dishName ?? 'Dish Name',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            '\$${_dish?.dishPrice?.toStringAsFixed(2) ?? '0.00'}',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          SizedBox(height: 12),
+                          Text(
+                            "Description: ${_dish?.dishDescription ?? 'No description available.'}",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          SizedBox(height: 12),
+                          Text(
+                            "Ingredients: ${_dish?.ingredientNames ?? 'Not specified.'}",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          SizedBox(height: 20),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              IconButton(
+                                onPressed: _quantity > 1
+                                    ? () => setState(() => _quantity--)
+                                    : null,
+                                icon: Icon(Icons.remove),
+                              ),
+                              Text(
+                                '$_quantity',
+                                style: TextStyle(fontSize: 18),
+                              ),
+                              IconButton(
+                                onPressed: () => setState(() => _quantity++),
+                                icon: Icon(Icons.add),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 20),
+                          ElevatedButton(
+                            onPressed: _addToCart,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              minimumSize: Size(200, 48),
+                            ),
+                            child: Text("Add to Cart"),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
+            ),
+
+      // BOTTOM NAVIGATION
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: Colors.red,
         unselectedItemColor: Colors.grey,

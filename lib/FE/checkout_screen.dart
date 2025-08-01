@@ -1,35 +1,89 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:fe_mobile_flutter/FE/auth_status.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fe_mobile_flutter/FE/services/account_service.dart';
+import 'package:fe_mobile_flutter/FE/services/order_service.dart';
+import 'package:fe_mobile_flutter/FE/services/vourcherservice.dart';
 
 class CheckoutScreen extends StatefulWidget {
-  final String userName;
-  final String phoneNumber;
-  final String address;
   final List<Map<String, dynamic>> cartItems;
 
-  const CheckoutScreen({
-    super.key,
-    required this.userName,
-    required this.phoneNumber,
-    required this.address,
-    required this.cartItems,
-  });
+  const CheckoutScreen({super.key, required this.cartItems});
 
   @override
-  _CheckoutScreenState createState() => _CheckoutScreenState();
+  State<CheckoutScreen> createState() => _CheckoutScreenState();
 }
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
-  late String currentName;
-  late String currentPhone;
-  late String currentAddress;
-
+  String userName = '';
+  String phoneNumber = '';
+  String address = '';
+  String? voucherCode;
+  int? accountId;
+  double? voucherDiscountPercentage;
+  double discountAmount = 0;
+  double totalBeforeDiscount = 0;
+  String selectedPaymentMethod = 'Cash';
+  final accountService = AccountService();
+  final orderService = OrderService();
+  bool hasLoadedArguments = false;
   @override
   void initState() {
     super.initState();
-    currentName = widget.userName;
-    currentPhone = widget.phoneNumber;
-    currentAddress = widget.address;
+    loadUserInfo();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!hasLoadedArguments) {
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      print("🟡 args received in CheckoutScreen: $args");
+
+      if (args != null) {
+        voucherCode = args['voucherCode']?.toString();
+        accountId = args['accountId'];
+        print("✅ Voucher code received in CheckoutScreen: $voucherCode");
+
+        if (voucherCode != null && voucherCode!.isNotEmpty) {
+          _loadVoucher(voucherCode!);
+        }
+      } else {
+        print("❌ ModalRoute arguments are null in CheckoutScreen");
+      }
+      hasLoadedArguments = true;
+    }
+  }
+
+  void _loadVoucher(String code) async {
+    try {
+      final voucher = await VourcherService().validateVoucher(code);
+      if (voucher != null) {
+        print(
+          "✅ Voucher percentage received from service: ${voucher.voucherDiscountPercentage}",
+        );
+
+        setState(() {
+          voucherDiscountPercentage = voucher.voucherDiscountPercentage;
+          discountAmount =
+              totalBeforeDiscount * (voucherDiscountPercentage! / 100);
+        });
+      } else {
+        print("❌ Voucher not found or invalid");
+        setState(() {
+          voucherDiscountPercentage = 0;
+          discountAmount = 0;
+        });
+      }
+    } catch (e) {
+      print("❌ Error loading voucher: $e");
+      setState(() {
+        voucherDiscountPercentage = 0;
+        discountAmount = 0;
+      });
+    }
   }
 
   void _navigateToAddressScreen() async {
@@ -37,15 +91,68 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     if (result != null && result is Map<String, String>) {
       setState(() {
-        currentName = result['name']!;
-        currentPhone = result['phone']!;
-        currentAddress = result['address']!;
+        userName = result['name']!;
+        phoneNumber = result['phone']!;
+        address = result['address']!;
       });
     }
   }
 
+  Future<void> loadUserInfo() async {
+    final prefs = await SharedPreferences.getInstance();
+    final accountId = prefs.getInt('accountId');
+
+    if (accountId != null) {
+      final account = await accountService.getAccountById(accountId);
+
+      if (account != null) {
+        setState(() {
+          userName = account.accountUsername ?? '';
+          phoneNumber = account.phoneNumber ?? '';
+          address = account.address ?? '';
+        });
+      }
+    }
+  }
+
+  Widget _buildDetailRow(String label, String value, {bool isBold = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    totalBeforeDiscount = widget.cartItems.fold(
+      0.0,
+      (sum, item) => sum + (item['price'] * item['quantity']),
+    );
+    if (voucherDiscountPercentage != null && voucherDiscountPercentage! > 0) {
+      discountAmount = totalBeforeDiscount * (voucherDiscountPercentage! / 100);
+    } else {
+      discountAmount = 0;
+    }
+
+    // ✅ Tổng cuối cùng
+    final double finalTotal = totalBeforeDiscount - discountAmount;
+
     double total = widget.cartItems.fold(
       0.0,
       (sum, item) => sum + (item['price'] * item['quantity']),
@@ -65,8 +172,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             margin: EdgeInsets.all(10),
             child: ListTile(
               leading: Icon(Icons.person),
-              title: Text('$currentName | $currentPhone'),
-              subtitle: Text('Address: $currentAddress'),
+              title: Text('$userName | $phoneNumber'),
+              subtitle: Text('Address: $address'),
               trailing: IconButton(
                 icon: Icon(Icons.edit_location_alt),
                 onPressed: _navigateToAddressScreen,
@@ -76,26 +183,104 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
           // Cart items
           Expanded(
-            child: ListView.builder(
-              itemCount: widget.cartItems.length,
-              itemBuilder: (context, index) {
-                var item = widget.cartItems[index];
-                return Card(
-                  margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  child: ListTile(
-                    leading: Image.network(item['image'], width: 50),
-                    title: Text(item['name']),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Shop: ${item['shop']}'),
-                        Text('Ingredients: ${item['ingredients']}'),
-                        Text('\$${item['price']} x${item['quantity']}'),
-                      ],
+            child: ListView(
+              padding: EdgeInsets.only(bottom: 16),
+              children: [
+                // Danh sách sản phẩm trong giỏ hàng
+                ...widget.cartItems.map((item) {
+                  return Card(
+                    margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    child: ListTile(
+                      leading: Image.asset(
+                        item['image'] ?? 'assets/default.png',
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover,
+                      ),
+                      title: Text(item['name'] ?? ''),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Shop: ${item['shop'] ?? 'Unknown'}'),
+                          Text('Ingredients: ${item['ingredients'] ?? ''}'),
+                          Text('\$${item['price']} x${item['quantity']}'),
+                        ],
+                      ),
                     ),
+                  );
+                }).toList(),
+
+                // Phần chọn phương thức thanh toán
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12.0,
+                    vertical: 8,
                   ),
-                );
-              },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Payment Method",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 6),
+                      DropdownButtonFormField<String>(
+                        value: selectedPaymentMethod,
+                        items: ['Cash', 'VnPay', 'PayPal'].map((method) {
+                          return DropdownMenuItem<String>(
+                            value: method,
+                            child: Text(method),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedPaymentMethod = value!;
+                          });
+                        },
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Phần chi tiết thanh toán
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Details Payment",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+
+                      SizedBox(height: 6),
+                      _buildDetailRow(
+                        "Bill of Food",
+                        "\$${totalBeforeDiscount.toStringAsFixed(2)}",
+                      ),
+                      if (voucherCode != null &&
+                          voucherCode!.isNotEmpty &&
+                          discountAmount > 0) ...[
+                        _buildDetailRow("Voucher Code", voucherCode!),
+                        _buildDetailRow(
+                          "Voucher Discount",
+                          "-\$${discountAmount.toStringAsFixed(2)}",
+                        ),
+                      ],
+
+                      Divider(),
+                      _buildDetailRow(
+                        "Total Payment",
+                        "\$${finalTotal.toStringAsFixed(2)}",
+                        isBold: true,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
 
@@ -105,25 +290,76 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Total Payment: \$${total.toStringAsFixed(2)}',
+                  'Total Payment: \$${finalTotal.toStringAsFixed(2)}',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
+
                 ElevatedButton(
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: Text("The Order: abcxyz1"),
-                        content: Text("Status: Ordered"),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: Text("OK"),
+                  onPressed: () async {
+                    final prefs = await SharedPreferences.getInstance();
+                    final accountId = prefs.getInt('accountId');
+
+                    if (accountId == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            "Account not found. Please login again.",
                           ),
-                        ],
-                      ),
-                    );
+                        ),
+                      );
+                      return;
+                    }
+
+                    final selectedCartItemIds = widget.cartItems
+                        .map((item) => item['cartItemId'])
+                        .toList();
+
+                    final cartItemsWithQuantity = widget.cartItems
+                        .map(
+                          (item) => {
+                            'cartItemId': item['cartItemId'],
+                            'quantity': item['quantity'],
+                          },
+                        )
+                        .toList();
+
+                    try {
+                      await orderService.placeOrder(
+                        accountId,
+                        cartItemsWithQuantity,
+                        voucherCode,
+                        phoneNumber: phoneNumber,
+                        orderAddress: address,
+                        paymentMethod: selectedPaymentMethod,
+                      );
+
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: Text("Order Successful"),
+                          content: Text("Your order has been placed!"),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop(); // Close dialog
+                                Navigator.of(context).pushNamedAndRemoveUntil(
+                                  '/orderFollow',
+                                  (route) => false,
+                                );
+                                // Go to Home and remove all previous routes
+                              },
+                              child: Text("OK"),
+                            ),
+                          ],
+                        ),
+                      );
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("❌ Order failed: $e")),
+                      );
+                    }
                   },
+
                   child: Text('Order'),
                 ),
               ],

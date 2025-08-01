@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fe_mobile_flutter/FE/auth_status.dart';
+import 'package:fe_mobile_flutter/FE/services/dish_service.dart';
+import 'package:fe_mobile_flutter/FE/models1/dish.dart';
+import 'package:fe_mobile_flutter/FE/models1/dish_dto.dart';
 
 class FoodDealScreen extends StatefulWidget {
   FoodDealScreen({super.key});
@@ -14,12 +17,27 @@ Future<bool> checkIsLoggedIn() async {
 }
 
 class _FoodDealScreenState extends State<FoodDealScreen> {
-  final List<Map<String, String>> foodDeals = [
-    {"title": "From A", "image": "assets/spaghetti.png", "price": "\$8"},
-    {"title": "From B", "image": "assets/burger.png", "price": "\$6"},
-    {"title": "From C", "image": "assets/pizza.png", "price": "\$9"},
-  ];
+  List<DishDto> foods = [];
+  List<DishDto> allFoods = [];
   bool _isSearchBarVisible = false;
+  @override
+  void initState() {
+    super.initState();
+    loadDishes();
+  }
+
+  Future<void> loadDishes() async {
+    try {
+      final dishService = DishService();
+      final dishList = await dishService.fetchAllDishes();
+      setState(() {
+        foods = dishList;
+        allFoods = List.from(dishList);
+      });
+    } catch (e) {
+      print("Error loading food deals: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,18 +68,19 @@ class _FoodDealScreenState extends State<FoodDealScreen> {
               child: ListView.builder(
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
-                itemCount: foodDeals.length,
+                itemCount: foods.length,
                 itemBuilder: (context, index) {
-                  final food = foodDeals[index];
+                  final food = foods[index];
                   return GestureDetector(
                     onTap: () {
                       Navigator.pushNamed(
                         context,
                         '/foodDetail',
                         arguments: {
-                          'name': food['title']!,
-                          'price': food['price']!,
-                          'image': food['image']!,
+                          'dishId': food.dishId,
+                          'image':
+                              food.dishImageUrl ??
+                              '', // (tùy chọn nếu muốn dùng ảnh trước khi load xong)
                         },
                       );
                     },
@@ -82,7 +101,7 @@ class _FoodDealScreenState extends State<FoodDealScreen> {
                               top: Radius.circular(12),
                             ),
                             child: Image.asset(
-                              food['image']!,
+                              'assets/${food.dishImageUrl ?? 'default.png'}',
                               width: MediaQuery.of(context).size.width * 0.85,
                               height: 200,
                               fit: BoxFit.cover,
@@ -91,10 +110,9 @@ class _FoodDealScreenState extends State<FoodDealScreen> {
                           Padding(
                             padding: EdgeInsets.all(12.0),
                             child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Text(
-                                  food['title']!,
+                                  food.dishName,
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: 18,
@@ -103,7 +121,7 @@ class _FoodDealScreenState extends State<FoodDealScreen> {
                                 ),
                                 SizedBox(height: 4),
                                 Text(
-                                  food['price']!,
+                                  '\$${food.dishPrice?.toString() ?? ''}',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: 16,
@@ -111,7 +129,9 @@ class _FoodDealScreenState extends State<FoodDealScreen> {
                                   ),
                                 ),
                                 SizedBox(height: 10),
-                                Text("Ingredients: etc."),
+                                Text(
+                                  "Description: ${food.dishDescription ?? 'N/A'}",
+                                ),
                                 SizedBox(height: 10),
                                 ElevatedButton(
                                   onPressed: () {
@@ -119,9 +139,10 @@ class _FoodDealScreenState extends State<FoodDealScreen> {
                                       context,
                                       '/foodDetail',
                                       arguments: {
-                                        'name': food['title']!,
-                                        'price': food['price']!,
-                                        'image': food['image']!,
+                                        'dishId': food.dishId,
+                                        'image':
+                                            food.dishImageUrl ??
+                                            '', // (tùy chọn nếu muốn dùng ảnh trước khi load xong)
                                       },
                                     );
                                   },

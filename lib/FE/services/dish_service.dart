@@ -18,6 +18,17 @@ class DishService {
     }
   }
 
+  Future<DishDto> fetchDishById(int id) async {
+    final response = await http.get(Uri.parse('$baseUrl/$id'));
+
+    if (response.statusCode == 200) {
+      final jsonData = json.decode(response.body);
+      return DishDto.fromJson(jsonData);
+    } else {
+      throw Exception('Failed to load dish');
+    }
+  }
+
   // Get dishes by category
   Future<List<DishDto>> fetchDishesByCategory(int categoryId) async {
     final response = await http.get(Uri.parse('$baseUrl/category/$categoryId'));

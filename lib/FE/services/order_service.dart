@@ -5,6 +5,42 @@ import 'package:fe_mobile_flutter/FE/models1/order.dart';
 class OrderService {
   final String baseUrl = "http://10.0.2.2:5065/api/orders";
 
+  Future<void> placeOrder(
+    int accountId,
+    // List<Map<String, dynamic>> selectedCartItemIds,
+    List<Map<String, dynamic>> selectedCartItems,
+    String? voucherCode,
+      {String? phoneNumber, String? orderAddress, String? paymentMethod}
+  ) async {
+    final url = Uri.parse('$baseUrl/ord');
+
+    final body = {
+      'accountId': accountId,
+      'selectedCartItemIds': selectedCartItems, // <-- đây là List<Map>
+      'voucherCode': voucherCode,
+          'phoneNumber': phoneNumber,
+    'orderAddress': orderAddress,
+    'paymentMethod': paymentMethod,
+    };
+    print("✅ Đang gửi order với: ${jsonEncode(body)}");
+
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(body),
+    );
+
+    if (response.statusCode == 200) {
+      print("✅ Order success: ${response.body}");
+      return;
+    } else {
+      print(
+        "❌ Order failed with status ${response.statusCode}: ${response.body}",
+      );
+      throw Exception('Order failed: ${response.body}');
+    }
+  }
+
   // Place order for selected cart items (POST /placebyone)
   Future<Map<String, dynamic>?> placeOrderBySelectedItems({
     required int accountId,

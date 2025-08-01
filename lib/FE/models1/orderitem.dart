@@ -36,6 +36,8 @@ class TblOrderItem {
     );
   }
 
+  get quantity => null;
+
   Map<String, dynamic> toJson() {
     return {
       'orderItemId': orderItemId,

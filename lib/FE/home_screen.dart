@@ -23,7 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final PageController _pageController = PageController(viewportFraction: 0.85);
   bool _isSearchBarVisible = false;
   final TextEditingController _searchController = TextEditingController();
-
+  bool _isCheckingAuth = false;
   @override
   void initState() {
     super.initState();
@@ -195,15 +195,28 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: foods.map((dish) {
                           return GestureDetector(
                             onTap: () {
+                              // Navigator.pushNamed(
+                              //   context,
+                              //   '/foodDetail',
+                              //   arguments:
+                              //       // dish,
+                              //       {
+                              //         'name': dish.dishName,
+                              //         'price': dish.dishPrice?.toString() ?? '',
+                              //         'image':
+                              //             dish.dishImageUrl ??
+                              //             '', // You may need default image fallback
+                              //         'description': dish.dishDescription ?? '',
+                              //       },
+                              // );
                               Navigator.pushNamed(
                                 context,
                                 '/foodDetail',
                                 arguments: {
-                                  'name': dish.dishName,
-                                  'price': dish.dishPrice?.toString() ?? '',
+                                  'dishId': dish.dishId,
                                   'image':
                                       dish.dishImageUrl ??
-                                      '', // You may need default image fallback
+                                      '', // (tùy chọn nếu muốn dùng ảnh trước khi load xong)
                                 },
                               );
                             },
@@ -212,6 +225,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               'assets/${dish.dishImageUrl ?? 'burger.png'}', // nếu là ảnh local
                               dish.dishName,
                               dish.dishPrice?.toString() ?? '',
+                              dish.dishDescription ?? '',
                             ),
                           );
                         }).toList(),
@@ -253,12 +267,25 @@ class _HomeScreenState extends State<HomeScreen> {
           if (index == 1) Navigator.pushNamed(context, '/cart');
           if (index == 2) print('Like tapped');
           if (index == 3) {
-            // bool loggedIn = await AuthStatus.checkIsLoggedIn();
-            // if (loggedIn) {
-            //   Navigator.pushNamed(context, '/userProfile');
-            // } else {
-            Navigator.pushNamed(context, '/login');
-            // }
+            setState(() => _isCheckingAuth = true);
+            try {
+              bool loggedIn = await AuthStatus.checkIsLoggedIn();
+              print('Navigating: loggedIn = $loggedIn');
+              if (loggedIn) {
+                Navigator.pushNamed(context, '/userProfile');
+              } else {
+                Navigator.pushNamed(context, '/login');
+              }
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text("Error checking auth: $e"),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            } finally {
+              setState(() => _isCheckingAuth = false);
+            }
           }
         },
       ),
@@ -270,6 +297,7 @@ class _HomeScreenState extends State<HomeScreen> {
     String imagePath,
     String title,
     String price,
+    String description,
   ) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 8.0),
@@ -310,6 +338,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text(
                     '\$$price',
                     style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 6),
+                  Text(
+                    description.length > 60
+                        ? '${description.substring(0, 60)}...' // ✅ rút gọn mô tả nếu quá dài
+                        : description,
+                    style: TextStyle(fontSize: 14, color: Colors.black87),
                     textAlign: TextAlign.center,
                   ),
                 ],

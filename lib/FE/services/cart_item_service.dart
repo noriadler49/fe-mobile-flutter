@@ -17,6 +17,17 @@ class CartItemService {
       return [];
     }
   }
+  Future<bool> updateQuantity(int cartItemId, int newQuantity) async {
+  final response = await http.put(
+    Uri.parse('$baseUrl/updateQuantity'),
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode({
+      'cartItemId': cartItemId,
+      'quantity': newQuantity,
+    }),
+  );
+  return response.statusCode == 200;
+}
 
   // Add item to cart
   Future<TblCartItem?> addToCart({
