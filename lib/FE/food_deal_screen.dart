@@ -42,6 +42,7 @@ class _FoodDealScreenState extends State<FoodDealScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: buildDrawer(),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -49,9 +50,23 @@ class _FoodDealScreenState extends State<FoodDealScreen> {
             buildHeader(
               title: 'MENU',
               rightIcons: [
-                Icon(Icons.shopping_cart, color: Colors.white, size: 20),
+                IconButton(
+                  icon: Icon(
+                    Icons.shopping_cart,
+                    color: Colors.white,
+                    size: 23,
+                  ),
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/cart');
+                  },
+                ),
                 SizedBox(width: 4),
-                Icon(Icons.menu, color: Colors.white, size: 20),
+                Builder(
+                  builder: (context) => IconButton(
+                    icon: Icon(Icons.menu, color: Colors.white, size: 23),
+                    onPressed: () => Scaffold.of(context).openDrawer(),
+                  ),
+                ),
                 SizedBox(width: 4),
               ],
               isSearchBarVisible: _isSearchBarVisible,
@@ -166,6 +181,7 @@ class _FoodDealScreenState extends State<FoodDealScreen> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: Colors.red,
+        unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(
@@ -187,6 +203,73 @@ class _FoodDealScreenState extends State<FoodDealScreen> {
             }
           }
         },
+      ),
+    );
+  }
+
+  Widget buildDrawer() {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.red, Colors.redAccent],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: Text(
+              'Menu',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          ListTile(
+            leading: Icon(Icons.restaurant_menu, color: Colors.red),
+            title: Text('Menu'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '');
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.favorite, color: Colors.red),
+            title: Text('Favorites'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/favorites');
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.history, color: Colors.red),
+            title: Text('Order History'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/orderFollow');
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.settings, color: Colors.red),
+            title: Text('Settings'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/userProfile');
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.contact_support, color: Colors.red),
+            title: Text('Contact Us'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/contact');
+            },
+          ),
+        ],
       ),
     );
   }

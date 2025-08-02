@@ -27,23 +27,25 @@ class _OrderFollowScreenState extends State<OrderFollowScreen> {
     final prefs = await SharedPreferences.getInstance();
     accountId = prefs.getInt('accountId');
 
-    if (accountId != null) {
-      try {
-        List<TblOrder> orders = await orderService.getOrdersByUser(accountId!);
-        print("accountId: $accountId"); // <--- kiểm tra
-        print("✅ Orders fetched: ${orders.length}"); // <--- kiểm tra
-        setState(() {
-          userOrders = orders;
-          isLoading = false;
-        });
-      } catch (e) {
-        print("❌ Error while loading orders: $e");
-        setState(() {
-          isLoading = false;
-        });
-      }
-    } else {
-      print('❌ Account ID not found in SharedPreferences');
+    if (accountId == null) {
+      // ✅ Nếu chưa đăng nhập thì chuyển hướng tới trang login
+      Future.microtask(() {
+        print('❌ Account ID not found in SharedPreferences');
+        Navigator.pushReplacementNamed(context, '/login');
+      });
+      return;
+    }
+
+    try {
+      List<TblOrder> orders = await orderService.getOrdersByUser(accountId!);
+      print("accountId: $accountId");
+      print("✅ Orders fetched: ${orders.length}");
+      setState(() {
+        userOrders = orders;
+        isLoading = false;
+      });
+    } catch (e) {
+      print("❌ Error while loading orders: $e");
       setState(() {
         isLoading = false;
       });
@@ -129,16 +131,25 @@ class _OrderFollowScreenState extends State<OrderFollowScreen> {
                           horizontal: 16.0,
                           vertical: 12.0,
                         ),
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: Text(
-                            'Total: \$${order.orderTotalPrice?.toStringAsFixed(2) ?? '0.00'}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: Colors.black87,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (order.orderAddress != null)
+                              Text("Address: ${order.orderAddress!}"),
+                            if (order.phoneNumber != null)
+                              Text("Phone: ${order.phoneNumber!}"),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: Text(
+                                'Total: \$${order.orderTotalPrice?.toStringAsFixed(2) ?? '0.00'}',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  color: Colors.black87,
+                                ),
+                              ),
                             ),
-                          ),
+                          ],
                         ),
                       ),
                     ],

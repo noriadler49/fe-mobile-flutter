@@ -72,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
               title: Text('Menu'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushNamed(context, '/menu');
+                Navigator.pushNamed(context, '/deals');
               },
             ),
             ListTile(
@@ -88,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
               title: Text('Order History'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushNamed(context, '/orderHistory');
+                Navigator.pushNamed(context, '/orderFollow');
               },
             ),
             ListTile(
@@ -96,7 +96,7 @@ class _HomeScreenState extends State<HomeScreen> {
               title: Text('Settings'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushNamed(context, '/settings');
+                Navigator.pushNamed(context, '/userProfile');
               },
             ),
             ListTile(
@@ -222,7 +222,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             },
                             child: _buildFoodItem(
                               context,
-                              'assets/${dish.dishImageUrl ?? 'burger.png'}', // nếu là ảnh local
+                              dish.dishImageUrl, // truyền thẳng URL hoặc tên file
                               dish.dishName,
                               dish.dishPrice?.toString() ?? '',
                               dish.dishDescription ?? '',
@@ -294,11 +294,63 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildFoodItem(
     BuildContext context,
-    String imagePath,
+    String? imagePath,
     String title,
     String price,
     String description,
   ) {
+    Widget imageWidget;
+
+    if (imagePath != null && imagePath.startsWith('http')) {
+      imageWidget = Image.network(
+        imagePath,
+        height: 100,
+        width: 100,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            height: 100,
+            width: 100,
+            color: Colors.grey[300],
+            child: const Icon(Icons.image_not_supported),
+          );
+        },
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Center(
+            child: CircularProgressIndicator(
+              value: loadingProgress.expectedTotalBytes != null
+                  ? loadingProgress.cumulativeBytesLoaded /
+                        loadingProgress.expectedTotalBytes!
+                  : null,
+            ),
+          );
+        },
+      );
+    } else if (imagePath != null && imagePath.isNotEmpty) {
+      imageWidget = Image.asset(
+        'assets/$imagePath',
+        height: 100,
+        width: 100,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            height: 100,
+            width: 100,
+            color: Colors.grey[300],
+            child: const Icon(Icons.image_not_supported),
+          );
+        },
+      );
+    } else {
+      imageWidget = Container(
+        height: 100,
+        width: 100,
+        color: Colors.grey[300],
+        child: const Icon(Icons.image_not_supported),
+      );
+    }
+
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 8.0),
       child: Card(
@@ -308,21 +360,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-
-              child: Image.asset(
-                imagePath,
-                height: 100,
-                width: 100,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    height: 100,
-                    width: 100,
-                    color: Colors.grey[300],
-                    child: const Icon(Icons.image_not_supported),
-                  );
-                },
-              ),
+              child: imageWidget,
             ),
             Padding(
               padding: EdgeInsets.all(12.0),
@@ -343,7 +381,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   SizedBox(height: 6),
                   Text(
                     description.length > 60
-                        ? '${description.substring(0, 60)}...' // ✅ rút gọn mô tả nếu quá dài
+                        ? '${description.substring(0, 60)}...'
                         : description,
                     style: TextStyle(fontSize: 14, color: Colors.black87),
                     textAlign: TextAlign.center,

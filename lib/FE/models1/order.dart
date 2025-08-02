@@ -7,8 +7,12 @@ class TblOrder {
   final int? accountId;
   final String? orderStatus;
   final String? voucherCode;
-  final DateTime? orderCreatedAt;
+  String? phoneNumber; // Thêm
+  String? orderAddress; // Thêm
+  String? paymentMethod;
 
+  final DateTime? orderCreatedAt;
+  DateTime? orderUpdatedAt;
   // Relationships (optional)
   final TblAccount? account;
   final List<TblOrderItem>? tblOrderItems;
@@ -19,7 +23,11 @@ class TblOrder {
     this.accountId,
     this.orderStatus,
     this.voucherCode,
+    this.phoneNumber,
+    this.orderAddress,
+    this.paymentMethod,
     this.orderCreatedAt,
+    this.orderUpdatedAt,
     this.account,
     this.tblOrderItems,
   });
@@ -33,8 +41,14 @@ class TblOrder {
       accountId: json['accountId'],
       orderStatus: json['orderStatus'],
       voucherCode: json['voucherCode'],
+      phoneNumber: json['phoneNumber'],
+      orderAddress: json['orderAddress'],
+      paymentMethod: json['paymentMethod'],
       orderCreatedAt: json['orderCreatedAt'] != null
           ? DateTime.parse(json['orderCreatedAt'])
+          : null,
+      orderUpdatedAt: json['orderUpdatedAt'] != null
+          ? DateTime.parse(json['orderUpdatedAt'])
           : null,
       account: json['account'] != null
           ? TblAccount.fromJson(json['account'])

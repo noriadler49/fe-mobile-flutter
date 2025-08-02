@@ -19,6 +19,7 @@ dependencies:
   printing: ^5.13.3
   image_picker: ^1.1.2
   json_annotation: ^4.8.0
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -34,3 +35,4 @@ flutter:
     - assets/soup.jpg
     - assets/avata.png
     - assets/default.jpg
+    - assets/chickenwings.png

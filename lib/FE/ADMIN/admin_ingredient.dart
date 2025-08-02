@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:fe_mobile_flutter/models/ingredient_model.dart';
-import 'package:fe_mobile_flutter/services/api_service.dart';
+import 'package:fe_mobile_flutter/FE/models1/ingredient.dart';
+import 'package:fe_mobile_flutter/FE/services/ingredient_service.dart';
 import 'package:fe_mobile_flutter/fe/admin/admin_search_button.dart';
 import 'package:fe_mobile_flutter/FE/auth_status.dart';
 
@@ -14,8 +14,9 @@ class ManageIngredientsScreen extends StatefulWidget {
 
 class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
   final _nameController = TextEditingController();
-  List<Ingredient> ingredients = [];
-  List<Ingredient> allIngredients = [];
+  final IngredientService _ingredientService = IngredientService();
+
+  List<TblIngredient> ingredients = [];
 
   @override
   void initState() {
@@ -25,12 +26,11 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
 
   Future<void> _loadIngredients({String query = ''}) async {
     try {
-      final fetchedIngredients = await ApiService.fetchIngredients(
+      final fetchedIngredients = await _ingredientService.getIngredients(
         query: query,
       );
       setState(() {
         ingredients = fetchedIngredients;
-        allIngredients = List.from(ingredients);
       });
     } catch (e) {
       ScaffoldMessenger.of(
@@ -41,7 +41,6 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
 
   Future<void> _addIngredient() async {
     final name = _nameController.text.trim();
-
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Please fill in the ingredient name')),
@@ -49,8 +48,15 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
       return;
     }
 
+    if (ingredients.any((i) => i.ingredientName == name)) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Tên nguyên liệu đã tồn tại")));
+      return;
+    }
+
     try {
-      await ApiService.createIngredient(Ingredient(name: name));
+      await _ingredientService.createIngredient(name);
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Ingredient added successfully')));
@@ -65,16 +71,89 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
 
   Future<void> _deleteIngredient(int id) async {
     try {
-      await ApiService.deleteIngredient(id);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ingredient deleted successfully')),
-      );
-      await _loadIngredients();
-    } catch (e) {
+      await _ingredientService.deleteIngredient(id);
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Error deleting ingredient: $e')));
+      ).showSnackBar(SnackBar(content: Text('Xoá nguyên liệu thành công')));
+
+      await _loadIngredients();
+    } catch (e) {
+      if (e.toString().contains("đang được sử dụng")) {
+        _showUsedAlert(
+          "Không thể xoá nguyên liệu vì đang được sử dụng trong món ăn.",
+        );
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Lỗi khi xoá: $e')));
+      }
     }
+  }
+
+  void _showUsedAlert(String msg) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text("Không thể xoá"),
+        content: Text(msg),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text("OK"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _editIngredient(TblIngredient ing) async {
+    final controller = TextEditingController(text: ing.ingredientName);
+    await showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text("Edit Ingredient"),
+        content: TextField(controller: controller),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () async {
+              final newName = controller.text.trim();
+              if (ingredients.any((i) => i.ingredientName == newName)) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("Tên nguyên liệu đã tồn tại")),
+                );
+                return;
+              }
+
+              if (newName.isEmpty) return;
+              try {
+                await _ingredientService.updateIngredient(
+                  TblIngredient(
+                    ingredientId: ing.ingredientId,
+                    ingredientName: newName,
+                  ),
+                );
+
+                Navigator.pop(context);
+                await _loadIngredients();
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text("Updated")));
+              } catch (e) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text("Error: $e")));
+              }
+            },
+            child: Text("Save"),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -237,8 +316,8 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
                       key: ValueKey(ingredients.length),
                       border: TableBorder.all(color: Colors.grey),
                       columnWidths: {
-                        0: FlexColumnWidth(0.5),
-                        1: FlexColumnWidth(2),
+                        0: FlexColumnWidth(0.3),
+                        1: FlexColumnWidth(1.5),
                         2: FlexColumnWidth(1),
                       },
                       children: [
@@ -276,25 +355,48 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
                                   Padding(
                                     padding: EdgeInsets.all(8.0),
                                     child: Text(
-                                      ingredient.id?.toString() ?? 'N/A',
+                                      ingredient.ingredientId?.toString() ??
+                                          'N/A',
                                     ),
                                   ),
                                   Padding(
                                     padding: EdgeInsets.all(8.0),
-                                    child: Text(ingredient.name),
+                                    child: Text(
+                                      ingredient.ingredientName ?? '',
+                                    ),
                                   ),
                                   Padding(
                                     padding: EdgeInsets.all(8.0),
                                     child: Row(
-                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         IconButton(
+                                          iconSize: 18,
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: 4,
+                                          ),
+                                          constraints: BoxConstraints(),
+                                          icon: Icon(
+                                            Icons.edit,
+                                            color: Colors.blue,
+                                          ),
+                                          onPressed: () =>
+                                              _editIngredient(ingredient),
+                                        ),
+                                        IconButton(
+                                          iconSize: 18,
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: 4,
+                                          ),
+                                          constraints: BoxConstraints(),
                                           icon: Icon(
                                             Icons.delete,
                                             color: Colors.red,
                                           ),
-                                          onPressed: () =>
-                                              _deleteIngredient(ingredient.id!),
+                                          onPressed: () => _deleteIngredient(
+                                            ingredient.ingredientId!,
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -316,17 +418,20 @@ class _ManageIngredientsScreenState extends State<ManageIngredientsScreen> {
         selectedItemColor: Colors.red,
         unselectedItemColor: Colors.grey,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
-            label: 'Cart',
+            icon: Icon(Icons.dashboard),
+            label: 'Dashboard',
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Like'),
+          BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Users'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Settings',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],
         onTap: (index) async {
-          if (index == 0) return;
-          if (index == 1) Navigator.pushNamed(context, '/cart');
+          if (index == 0) Navigator.pushNamed(context, '/admin/dashboard');
+          if (index == 1) Navigator.pushNamed(context, 'userManagement');
           if (index == 2) print('Like tapped');
           if (index == 3) {
             bool loggedIn = await AuthStatus.checkIsLoggedIn();

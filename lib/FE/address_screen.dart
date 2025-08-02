@@ -82,10 +82,12 @@ class _AddressScreenState extends State<AddressScreen> {
     await prefs.setString('saved_addresses', jsonEncode(addressList));
   }
 
-  void _showAddAddressDialog() {
-    final nameController = TextEditingController();
+  Future<void> _showAddAddressDialog() async {
     final phoneController = TextEditingController();
     final addressController = TextEditingController();
+
+    final prefs = await SharedPreferences.getInstance();
+    final fixedName = prefs.getString('accountUsername') ?? 'UserName';
 
     showDialog(
       context: context,
@@ -93,11 +95,13 @@ class _AddressScreenState extends State<AddressScreen> {
         title: Text('New Address'),
         content: SingleChildScrollView(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextField(
-                controller: nameController,
-                decoration: InputDecoration(labelText: 'Name'),
+              Text(
+                'Name: $fixedName',
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
+              SizedBox(height: 10),
               TextField(
                 controller: phoneController,
                 decoration: InputDecoration(labelText: 'Phone Number'),
@@ -112,20 +116,23 @@ class _AddressScreenState extends State<AddressScreen> {
         actions: [
           TextButton(
             onPressed: () async {
-              if (nameController.text.isNotEmpty &&
-                  phoneController.text.isNotEmpty &&
+              if (phoneController.text.isNotEmpty &&
                   addressController.text.isNotEmpty) {
                 setState(() {
                   addressList.add({
-                    'name': nameController.text,
+                    'name': fixedName,
                     'phone': phoneController.text,
                     'address': addressController.text,
                   });
                   selectedAddressIndex = addressList.length - 1;
                 });
 
-                await _saveAddresses(); // ✅ Save to storage
-                Navigator.pop(context, addressList[selectedAddressIndex]);
+                await _saveAddresses();
+                Navigator.pop(context, {
+                  'name': fixedName,
+                  'phone': addressList[selectedAddressIndex]['phone']!,
+                  'address': addressList[selectedAddressIndex]['address']!,
+                });
               }
             },
             child: Text('Add'),
@@ -177,7 +184,11 @@ class _AddressScreenState extends State<AddressScreen> {
           Center(
             child: ElevatedButton(
               onPressed: () {
-                Navigator.pop(context, addressList[selectedAddressIndex]);
+                Navigator.pop(context, {
+                  'name': addressList[selectedAddressIndex]['name']!,
+                  'phone': addressList[selectedAddressIndex]['phone']!,
+                  'address': addressList[selectedAddressIndex]['address']!,
+                });
               },
               child: Text('Use This Address'),
             ),

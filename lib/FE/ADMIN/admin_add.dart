@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:fe_mobile_flutter/models/dish_model.dart';
+import 'dart:convert';
+import 'package:fe_mobile_flutter/FE/models1/dishdto_admin.dart';
 import 'package:fe_mobile_flutter/services/api_service.dart';
 import 'package:fe_mobile_flutter/fe/admin/admin_search_button.dart';
 import 'package:fe_mobile_flutter/FE/auth_status.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
+import 'package:fe_mobile_flutter/FE/services/admin_dish_service.dart';
+
 import 'dart:io';
 
 class AdminAddDishScreen extends StatefulWidget {
@@ -17,10 +23,14 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
   final _imgUrlController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _categoryIdController = TextEditingController();
   File? _selectedImage;
   final ImagePicker _picker = ImagePicker();
-  List<Dish> dishes = [];
-  List<Dish> allDishes = [];
+
+  List<DishDtoAdmin> dishes = [];
+  List<DishDtoAdmin> allDishes = [];
+
   bool _isEditing = false;
   int? _editingId;
 
@@ -30,22 +40,31 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
     _loadDishes();
   }
 
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _priceController.dispose();
+    _imgUrlController.dispose();
+    _descriptionController.dispose();
+    _categoryIdController.dispose();
+
+    super.dispose();
+  }
+
   Future<bool> checkIsLoggedIn() async {
     final accountId = await AuthStatus.getCurrentAccountId();
-    return accountId != null; // logged in if there's an ID saved
+    return accountId != null;
   }
 
   Future<void> _loadDishes() async {
     try {
-      final loadedDishes = await ApiService.fetchDishes();
+      final loadedDishes = await AdminDishService.fetchDishes();
       setState(() {
         dishes = loadedDishes;
         allDishes = List.from(loadedDishes);
       });
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error loading dishes: $e')));
+      _showMessage('Error loading dishes: $e');
     }
   }
 
@@ -62,45 +81,40 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
     final name = _nameController.text.trim();
     final price = _priceController.text.trim();
     final imgUrl = _imgUrlController.text.trim();
+    final description = _descriptionController.text.trim();
+    final categoryId = int.tryParse(_categoryIdController.text.trim()) ?? 1;
 
     if (name.isEmpty || price.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please fill in name and price fields')),
-      );
+      _showMessage('Please fill in name and price fields');
       return;
     }
+
     final priceValue = double.tryParse(price);
     if (priceValue == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Price must be a valid number')));
+      _showMessage('Price must be a valid number');
       return;
     }
 
     try {
-      final dish = Dish(
+      final dish = DishDtoAdmin(
         id: _isEditing ? _editingId : null,
         name: name,
-        imageUrl: imgUrl.isEmpty ? null : imgUrl,
-        description: '', // Placeholder
+        dishImageUrl: imgUrl.isEmpty ? null : imgUrl,
+        description: description.isEmpty ? 'No description' : description,
         price: priceValue,
-        categoryId: 1, // Placeholder, adjust as needed
+        categoryId: categoryId,
       );
 
       if (_isEditing && _editingId != null) {
-        print(
-          'Updating dish with ID: $_editingId, name: $name, price: $priceValue, imgUrl: $imgUrl',
-        );
-        final updatedDish = await ApiService.updateDish(
+        await AdminDishService.updateDish(
           _editingId!,
           dish,
           _selectedImage,
           imgUrl,
         );
-        print('Update response: $updatedDish');
         await _loadDishes();
       } else {
-        final createdDish = await ApiService.createDish(
+        final createdDish = await AdminDishService.createDish(
           dish,
           _selectedImage,
           imgUrl,
@@ -110,19 +124,23 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
           allDishes.add(createdDish);
         });
       }
-      _nameController.clear();
-      _priceController.clear();
-      _imgUrlController.clear();
-      setState(() {
-        _selectedImage = null;
-        _isEditing = false;
-        _editingId = null;
-      });
+
+      _clearForm();
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      _showMessage('Error: $e');
     }
+  }
+
+  void _clearForm() {
+    _nameController.clear();
+    _priceController.clear();
+    _imgUrlController.clear();
+    _descriptionController.clear();
+    setState(() {
+      _selectedImage = null;
+      _isEditing = false;
+      _editingId = null;
+    });
   }
 
   void _editDish(int? id) {
@@ -131,8 +149,9 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
     setState(() {
       _nameController.text = dish.name;
       _priceController.text = dish.price.toString();
-      _imgUrlController.text = dish.imageUrl ?? '';
-      _selectedImage = null; // Reset image when editing
+      _imgUrlController.text = dish.dishImageUrl ?? '';
+      _descriptionController.text = dish.description ?? '';
+      _selectedImage = null;
       _isEditing = true;
       _editingId = id;
     });
@@ -141,20 +160,38 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
   Future<void> _deleteDish(int? id) async {
     if (id == null) return;
     try {
-      await ApiService.deleteDish(id);
+      await AdminDishService.deleteDish(id);
       setState(() {
         dishes.removeWhere((dish) => dish.id == id);
         allDishes.removeWhere((dish) => dish.id == id);
       });
-      await _loadDishes();
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Dish deleted successfully')));
+      _showMessage('Dish deleted successfully');
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error deleting dish: $e')));
+      _showMessage('Error deleting dish: $e');
     }
+  }
+
+  Future<void> downloadImageFromUrl(String url) async {
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final directory = await getTemporaryDirectory();
+        final fileName = path.basename(Uri.parse(url).path);
+        final file = File('${directory.path}/$fileName');
+        await file.writeAsBytes(response.bodyBytes);
+        setState(() => _selectedImage = file);
+      } else {
+        print('Lỗi tải ảnh từ URL: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Lỗi khi tải ảnh từ URL: $e');
+    }
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -273,7 +310,7 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(10.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -291,7 +328,23 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                       decoration: InputDecoration(
                         labelText: 'Image URL (optional):',
                       ),
+                      onSubmitted: (value) {
+                        if (value.trim().isNotEmpty) {
+                          downloadImageFromUrl(value.trim());
+                        }
+                      },
                     ),
+                    TextField(
+                      controller: _descriptionController,
+                      decoration: InputDecoration(labelText: 'Description:'),
+                      maxLines: 2,
+                    ),
+                    TextField(
+                      controller: _categoryIdController,
+                      decoration: InputDecoration(labelText: 'Category (id):'),
+                      keyboardType: TextInputType.number,
+                    ),
+
                     SizedBox(height: 16),
                     Row(
                       children: [
@@ -366,11 +419,15 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                           key: ValueKey(dishes.length),
                           border: TableBorder.all(color: Colors.grey),
                           columnWidths: {
-                            0: FlexColumnWidth(0.6), // ID
-                            1: FlexColumnWidth(2), // Name
+                            0: FlexColumnWidth(0.5), // ID
+                            1: FlexColumnWidth(1.4), // Name
                             2: FlexColumnWidth(1), // Price
-                            3: FlexColumnWidth(1), // Image
-                            4: FlexColumnWidth(1.4), // Actions
+                            3: FlexColumnWidth(0.8), // Image
+                            4: FlexColumnWidth(
+                              1.5,
+                            ), // Description ✅ tăng chiều rộng
+                            5: FlexColumnWidth(1.3), // Category ID
+                            6: FlexColumnWidth(1.2), // Action buttons
                           },
                           defaultColumnWidth: FixedColumnWidth(
                             120,
@@ -449,6 +506,54 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                                 ),
                                 Padding(
                                   padding: EdgeInsets.all(10.0),
+                                  child: FilterButtonWithPopup(
+                                    label: 'Description',
+                                    onSearch: (value) async {
+                                      if (value.isEmpty) {
+                                        await _loadDishes();
+                                      } else {
+                                        setState(() {
+                                          dishes = allDishes
+                                              .where(
+                                                (dish) => dish.description
+                                                    .toString()
+                                                    .toLowerCase()
+                                                    .contains(
+                                                      value.toLowerCase(),
+                                                    ),
+                                              )
+                                              .toList();
+                                        });
+                                      }
+                                    },
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(10.0),
+                                  child: FilterButtonWithPopup(
+                                    label: 'Category',
+                                    onSearch: (value) async {
+                                      if (value.isEmpty) {
+                                        await _loadDishes();
+                                      } else {
+                                        setState(() {
+                                          dishes = allDishes
+                                              .where(
+                                                (dish) => dish.categoryId
+                                                    .toString()
+                                                    .toLowerCase()
+                                                    .contains(
+                                                      value.toLowerCase(),
+                                                    ),
+                                              )
+                                              .toList();
+                                        });
+                                      }
+                                    },
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(10.0),
                                   child: Text(
                                     'Thao tác',
                                     style: TextStyle(
@@ -480,48 +585,74 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                                       Padding(
                                         padding: EdgeInsets.all(10.0),
                                         child: Text(
-                                          dish.price.toStringAsFixed(2),
+                                          dish.price != null
+                                              ? dish.price!.toStringAsFixed(2)
+                                              : '0.00',
                                           style: TextStyle(fontSize: 12),
                                         ),
                                       ),
                                       Padding(
                                         padding: EdgeInsets.all(10.0),
                                         child:
-                                            dish.imageUrl != null &&
-                                                dish.imageUrl!.isNotEmpty
-                                            ? Image.network(
-                                                dish.imageUrl!,
-                                                width: 40,
-                                                height: 40,
-                                                fit: BoxFit.cover,
-                                                errorBuilder:
-                                                    (
-                                                      context,
-                                                      error,
-                                                      stackTrace,
-                                                    ) => Icon(
-                                                      Icons.image_not_supported,
-                                                      size: 40,
-                                                      color: Colors.grey,
-                                                    ),
-                                                loadingBuilder: (context, child, loadingProgress) {
-                                                  if (loadingProgress == null)
-                                                    return child;
-                                                  return Center(
-                                                    child: CircularProgressIndicator(
-                                                      value:
-                                                          loadingProgress
-                                                                  .expectedTotalBytes !=
-                                                              null
-                                                          ? loadingProgress
-                                                                    .cumulativeBytesLoaded /
-                                                                loadingProgress
-                                                                    .expectedTotalBytes!
-                                                          : null,
-                                                    ),
-                                                  );
-                                                },
-                                              )
+                                            dish.dishImageUrl != null &&
+                                                dish.dishImageUrl!.isNotEmpty
+                                            ? (dish.dishImageUrl!.startsWith(
+                                                    'http',
+                                                  )
+                                                  ? Image.network(
+                                                      dish.dishImageUrl!,
+                                                      width: 40,
+                                                      height: 40,
+                                                      fit: BoxFit.cover,
+                                                      errorBuilder:
+                                                          (
+                                                            context,
+                                                            error,
+                                                            stackTrace,
+                                                          ) => Icon(
+                                                            Icons
+                                                                .image_not_supported,
+                                                            size: 40,
+                                                            color: Colors.grey,
+                                                          ),
+                                                      loadingBuilder:
+                                                          (
+                                                            context,
+                                                            child,
+                                                            loadingProgress,
+                                                          ) {
+                                                            if (loadingProgress ==
+                                                                null)
+                                                              return child;
+                                                            return Center(
+                                                              child: CircularProgressIndicator(
+                                                                value:
+                                                                    loadingProgress
+                                                                            .expectedTotalBytes !=
+                                                                        null
+                                                                    ? loadingProgress
+                                                                              .cumulativeBytesLoaded /
+                                                                          loadingProgress
+                                                                              .expectedTotalBytes!
+                                                                    : null,
+                                                              ),
+                                                            );
+                                                          },
+                                                    )
+                                                  : Image.asset(
+                                                      'assets/${dish.dishImageUrl!}', // ảnh từ thư mục assets/
+                                                      width: 40,
+                                                      height: 40,
+                                                      fit: BoxFit.cover,
+                                                      errorBuilder:
+                                                          (
+                                                            context,
+                                                            error,
+                                                            stackTrace,
+                                                          ) => Icon(
+                                                            Icons.broken_image,
+                                                          ),
+                                                    ))
                                             : Text(
                                                 'No image',
                                                 style: TextStyle(fontSize: 12),
@@ -529,24 +660,48 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                                       ),
                                       Padding(
                                         padding: EdgeInsets.all(10.0),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            IconButton(
-                                              icon: Icon(Icons.edit, size: 18),
-                                              onPressed: () =>
-                                                  _editDish(dish.id),
-                                            ),
-                                            IconButton(
-                                              icon: Icon(
-                                                Icons.delete,
-                                                color: Colors.red,
-                                                size: 18,
+                                        child: Text(
+                                          dish.description ?? 'N/A',
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 2,
+                                          style: TextStyle(fontSize: 12),
+                                        ),
+                                      ),
+
+                                      Padding(
+                                        padding: EdgeInsets.all(10.0),
+                                        child: Text(
+                                          dish.categoryId.toString(),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                          style: TextStyle(fontSize: 12),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: EdgeInsets.all(10.0),
+                                        child: FittedBox(
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              IconButton(
+                                                icon: Icon(
+                                                  Icons.edit,
+                                                  size: 18,
+                                                ),
+                                                onPressed: () =>
+                                                    _editDish(dish.id),
                                               ),
-                                              onPressed: () =>
-                                                  _deleteDish(dish.id),
-                                            ),
-                                          ],
+                                              IconButton(
+                                                icon: Icon(
+                                                  Icons.delete,
+                                                  color: Colors.red,
+                                                  size: 18,
+                                                ),
+                                                onPressed: () =>
+                                                    _deleteDish(dish.id),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -568,17 +723,20 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
         selectedItemColor: Colors.red,
         unselectedItemColor: Colors.grey,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
-            label: 'Cart',
+            icon: Icon(Icons.dashboard),
+            label: 'Dashboard',
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Like'),
+          BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Users'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Settings',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],
         onTap: (index) async {
-          if (index == 0) return;
-          if (index == 1) Navigator.pushNamed(context, '/cart');
+          if (index == 0) Navigator.pushNamed(context, '/admin/dashboard');
+          if (index == 1) Navigator.pushNamed(context, '');
           if (index == 2) print('Like tapped');
           if (index == 3) {
             if (await checkIsLoggedIn()) {

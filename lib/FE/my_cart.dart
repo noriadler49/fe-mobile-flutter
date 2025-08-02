@@ -372,7 +372,7 @@ class _MyCartState extends State<MyCart> {
                     children: [
                       OutlinedButton(
                         onPressed: () {
-                          Navigator.pushNamed(context, '/');
+                          Navigator.pushNamed(context, '/deals');
                         },
                         style: OutlinedButton.styleFrom(
                           minimumSize: Size(150, 48),
@@ -457,7 +457,7 @@ class _MyCartState extends State<MyCart> {
             ),
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: Colors.red,
-        unselectedItemColor: Color(0xFFB0BEC5),
+        unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(

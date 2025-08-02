@@ -106,6 +106,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       final account = await accountService.getAccountById(accountId);
 
       if (account != null) {
+        final prefs = await SharedPreferences.getInstance();
+        prefs.setString('accountUsername', account.accountUsername ?? '');
         setState(() {
           userName = account.accountUsername ?? '';
           phoneNumber = account.phoneNumber ?? '';

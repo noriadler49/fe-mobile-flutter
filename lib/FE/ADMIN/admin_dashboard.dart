@@ -178,32 +178,42 @@ class AdminDashboardScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 12),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        ElevatedButton(
-                          onPressed: () =>
-                              Navigator.pushNamed(context, '/admin/orders'),
-                          child: Text('View Orders'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () =>
+                                Navigator.pushNamed(context, '/admin/orders'),
+                            child: Text('Orders'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                            ),
                           ),
                         ),
-                        ElevatedButton(
-                          onPressed: () =>
-                              Navigator.pushNamed(context, '/admin/add'),
-                          child: Text('Add Dish'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () =>
+                                Navigator.pushNamed(context, '/admin/add'),
+                            child: Text('Dishes'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                            ),
                           ),
                         ),
-                        ElevatedButton(
-                          onPressed: () => Navigator.pushNamed(
-                            context,
-                            '/admin/ingredients',
-                          ),
-                          child: Text('Manage Ingredients'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () => Navigator.pushNamed(
+                              context,
+                              '/admin/ingredients',
+                            ),
+                            child: Text(
+                              'Ingredients',
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                            ),
                           ),
                         ),
                       ],
@@ -219,17 +229,20 @@ class AdminDashboardScreen extends StatelessWidget {
         selectedItemColor: Colors.red,
         unselectedItemColor: Colors.grey,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
-            label: 'Cart',
+            icon: Icon(Icons.dashboard),
+            label: 'Dashboard',
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Like'),
+          BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Users'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Settings',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],
         onTap: (index) async {
           if (index == 0) return;
-          if (index == 1) Navigator.pushNamed(context, '/cart');
+          if (index == 1) Navigator.pushNamed(context, 'userManagement');
           if (index == 2) print('Like tapped');
           if (index == 3) {
             bool loggedIn = await AuthStatus.checkIsLoggedIn();

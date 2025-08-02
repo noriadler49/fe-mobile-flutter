@@ -22,7 +22,6 @@ class _FoodDetailsScreenState extends State<FoodDetailsScreen> {
   int _quantity = 1;
   DishDto? _dish;
   bool _isLoading = true;
-  bool _isSearchBarVisible = false;
 
   @override
   void initState() {
@@ -106,6 +105,7 @@ class _FoodDetailsScreenState extends State<FoodDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: buildDrawer(),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : SafeArea(
@@ -126,20 +126,17 @@ class _FoodDetailsScreenState extends State<FoodDetailsScreen> {
                             Navigator.pushNamed(context, '/cart');
                           },
                         ),
-                        IconButton(
-                          icon: Icon(Icons.menu, color: Colors.white, size: 20),
-                          onPressed: () {
-                            print('Menu tapped');
-                          },
+                        Builder(
+                          builder: (context) => IconButton(
+                            icon: Icon(
+                              Icons.menu,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                            onPressed: () => Scaffold.of(context).openDrawer(),
+                          ),
                         ),
                       ],
-                      isSearchBarVisible: _isSearchBarVisible,
-                      onSearchPressed: () {
-                        setState(() {
-                          _isSearchBarVisible = !_isSearchBarVisible;
-                        });
-                      },
-                      searchHintText: 'Search menu...',
                     ),
 
                     // CONTENT
@@ -265,12 +262,76 @@ class _FoodDetailsScreenState extends State<FoodDetailsScreen> {
     );
   }
 
+  Widget buildDrawer() {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.red, Colors.redAccent],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: Text(
+              'Menu',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          ListTile(
+            leading: Icon(Icons.restaurant_menu, color: Colors.red),
+            title: Text('Menu'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/deals');
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.favorite, color: Colors.red),
+            title: Text('Favorites'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/favorites');
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.history, color: Colors.red),
+            title: Text('Order History'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/orderFollow');
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.settings, color: Colors.red),
+            title: Text('Settings'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/userProfile');
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.contact_support, color: Colors.red),
+            title: Text('Contact Us'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/contact');
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget buildHeader({
     required String title,
     required List<Widget> rightIcons,
-    required bool isSearchBarVisible,
-    required VoidCallback onSearchPressed,
-    String? searchHintText,
   }) {
     return Container(
       padding: EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 12.0),
@@ -298,32 +359,11 @@ class _FoodDetailsScreenState extends State<FoodDetailsScreen> {
                     ),
                   ),
                   SizedBox(width: 8),
-                  IconButton(
-                    icon: Icon(Icons.search, color: Colors.white, size: 20),
-                    onPressed: onSearchPressed,
-                  ),
                 ],
               ),
               Row(children: rightIcons),
             ],
           ),
-          if (isSearchBarVisible) ...[
-            SizedBox(height: 8),
-            TextField(
-              decoration: InputDecoration(
-                hintText: searchHintText ?? 'Search...',
-                hintStyle: TextStyle(color: Colors.white70),
-                prefixIcon: Icon(Icons.search, color: Colors.white),
-                filled: true,
-                fillColor: Colors.white.withOpacity(0.2),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-              style: TextStyle(color: Colors.white),
-            ),
-          ],
         ],
       ),
     );
