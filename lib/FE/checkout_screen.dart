@@ -140,6 +140,62 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
+  Widget buildImage(String? imagePath) {
+    if (imagePath == null || imagePath.isEmpty) {
+      return _buildPlaceholder();
+    }
+    if (imagePath.startsWith('assets/http')) {
+      imagePath = imagePath.replaceFirst('assets/', '');
+    }
+    // Nếu là URL
+    if (imagePath.startsWith('http')) {
+      return Image.network(
+        imagePath,
+        height: 100,
+        width: 100,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return _buildPlaceholder();
+        },
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Center(
+            child: CircularProgressIndicator(
+              value: loadingProgress.expectedTotalBytes != null
+                  ? loadingProgress.cumulativeBytesLoaded /
+                        loadingProgress.expectedTotalBytes!
+                  : null,
+            ),
+          );
+        },
+      );
+    }
+
+    // Nếu là asset path
+    final assetPath = imagePath.startsWith('assets/')
+        ? imagePath
+        : 'assets/$imagePath';
+
+    return Image.asset(
+      assetPath,
+      height: 100,
+      width: 100,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        return _buildPlaceholder();
+      },
+    );
+  }
+
+  Widget _buildPlaceholder() {
+    return Container(
+      height: 100,
+      width: 100,
+      color: Colors.grey[300],
+      child: const Icon(Icons.image_not_supported),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     totalBeforeDiscount = widget.cartItems.fold(
@@ -193,12 +249,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   return Card(
                     margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     child: ListTile(
-                      leading: Image.asset(
-                        item['image'] ?? 'assets/default.png',
-                        width: 50,
-                        height: 50,
-                        fit: BoxFit.cover,
-                      ),
+                      leading: buildImage(item['image']),
                       title: Text(item['name'] ?? ''),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

@@ -110,12 +110,35 @@ class _OrderFollowScreenState extends State<OrderFollowScreen> {
                     children: [
                       ...(order.tblOrderItems?.map((item) {
                             return ListTile(
-                              leading: Image.asset(
-                                'assets/${item.dish?.dishImageUrl ?? 'default.png'}',
-                                width: 50,
-                                height: 50,
-                                fit: BoxFit.cover,
-                              ),
+                              leading:
+                                  (item.dish?.dishImageUrl != null &&
+                                      item.dish!.dishImageUrl!.startsWith(
+                                        'http',
+                                      ))
+                                  ? Image.network(
+                                      item.dish!.dishImageUrl!,
+                                      width: 50,
+                                      height: 50,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                            return Image.asset(
+                                              'assets/default.png',
+                                              width: 50,
+                                              height: 50,
+                                              fit: BoxFit.cover,
+                                            );
+                                          },
+                                    )
+                                  : Image.asset(
+                                      item.dish?.dishImageUrl != null
+                                          ? 'assets/${item.dish!.dishImageUrl!}'
+                                          : 'assets/default.png',
+                                      width: 50,
+                                      height: 50,
+                                      fit: BoxFit.cover,
+                                    ),
+
                               title: Text(item.dish?.dishName ?? 'Unknown'),
                               subtitle: Text('Qty: ${item.orderItemQuantity}'),
                               trailing: Text(

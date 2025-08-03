@@ -45,8 +45,7 @@ class DishDtoAdmin {
   );
 
   Map<String, dynamic> toJson() {
-    return {
-      'dishId': id,
+    final map = {
       'dishName': name,
       'dishImageUrl': dishImageUrl,
       'dishDescription': description,
@@ -54,5 +53,11 @@ class DishDtoAdmin {
       'categoryId': categoryId,
       'ingredientIds': ingredientIds,
     };
+
+    if (id != null) {
+      map['dishId'] = id; // chỉ thêm khi không null
+    }
+
+    return map;
   }
 }

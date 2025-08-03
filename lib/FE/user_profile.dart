@@ -1103,15 +1103,31 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
               sectionTitle('Profile'),
               profileItem(
-                Icons.manage_accounts,
+                Icons.account_circle,
                 'Customize Profile',
                 _showEditProfileDialog,
               ),
 
-              SizedBox(height: 20),
+              if (user!.accountRole == 'admin') ...[
+                SizedBox(height: 22),
+                sectionTitle('User'),
+                profileItem(
+                  Icons.manage_accounts,
+                  'User Management Profile',
+                  () {
+                    Navigator.pushNamed(context, '/userManagement');
+                  },
+                ),
+              ],
+
+              SizedBox(height: 25),
               sectionTitle('Order'),
               profileItem(Icons.local_shipping_outlined, 'Tracking Order', () {
-                Navigator.pushNamed(context, '/orderFollow');
+                if (user!.accountRole == 'admin') {
+                  Navigator.pushNamed(context, '/admin/orders');
+                } else {
+                  Navigator.pushNamed(context, '/orderFollow');
+                }
               }),
 
               SizedBox(height: 30),

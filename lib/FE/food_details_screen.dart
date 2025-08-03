@@ -32,6 +32,7 @@ class _FoodDetailsScreenState extends State<FoodDetailsScreen> {
   Future<void> _fetchDishDetail() async {
     try {
       final dish = await DishService().fetchDishById(widget.dishId);
+      print("Fetched dish image: ${dish.dishImageUrl}");
       setState(() {
         _dish = dish;
         _isLoading = false;
@@ -150,12 +151,66 @@ class _FoodDetailsScreenState extends State<FoodDetailsScreen> {
                         children: [
                           ClipRRect(
                             borderRadius: BorderRadius.circular(12),
-                            child: Image.asset(
-                              'assets/${_dish?.dishImageUrl ?? widget.image ?? 'default.png'}',
-                              width: MediaQuery.of(context).size.width * 0.9,
-                              height: 200,
-                              fit: BoxFit.cover,
-                            ),
+                            child:
+                                (_dish?.dishImageUrl != null &&
+                                    _dish!.dishImageUrl!.isNotEmpty)
+                                ? (_dish!.dishImageUrl!.startsWith('http')
+                                      ? Image.network(
+                                          _dish!.dishImageUrl!,
+                                          width:
+                                              MediaQuery.of(
+                                                context,
+                                              ).size.width *
+                                              0.9,
+                                          height: 200,
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  Icon(
+                                                    Icons.broken_image,
+                                                    size: 100,
+                                                  ),
+                                          loadingBuilder: (context, child, loadingProgress) {
+                                            if (loadingProgress == null)
+                                              return child;
+                                            return Center(
+                                              child: CircularProgressIndicator(
+                                                value:
+                                                    loadingProgress
+                                                            .expectedTotalBytes !=
+                                                        null
+                                                    ? loadingProgress
+                                                              .cumulativeBytesLoaded /
+                                                          loadingProgress
+                                                              .expectedTotalBytes!
+                                                    : null,
+                                              ),
+                                            );
+                                          },
+                                        )
+                                      : Image.asset(
+                                          'assets/${_dish!.dishImageUrl!}',
+                                          width:
+                                              MediaQuery.of(
+                                                context,
+                                              ).size.width *
+                                              0.9,
+                                          height: 200,
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  Icon(
+                                                    Icons.broken_image,
+                                                    size: 100,
+                                                  ),
+                                        ))
+                                : Image.asset(
+                                    'assets/default.png',
+                                    width:
+                                        MediaQuery.of(context).size.width * 0.9,
+                                    height: 200,
+                                    fit: BoxFit.cover,
+                                  ),
                           ),
                           SizedBox(height: 12),
                           Text(

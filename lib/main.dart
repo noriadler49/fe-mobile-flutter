@@ -12,11 +12,14 @@ import 'FE/address_screen.dart';
 import 'FE/don_hang.dart';
 import 'FE/order_detail.dart';
 import 'FE/user_profile.dart';
+import 'FE/ADMIN/admin_user_management.dart';
 import 'FE/ADMIN/admin_dashboard.dart';
 import 'FE/ADMIN/admin_all.dart';
 import 'FE/ADMIN/admin_add.dart';
 import 'FE/ADMIN/admin_ingredient.dart';
+import 'FE/ADMIN/admin_order_detail.dart';
 import 'FE/models1/dish_dto.dart';
+import 'FE/models1/order.dart';
 import 'FE/order_follow.dart';
 
 void main() {
@@ -62,6 +65,8 @@ class _MyAppState extends State<MyApp> {
         // '/orderHistory': (context) => OrderPage(),
         '/orderFollow': (context) => OrderFollowScreen(),
         '/userProfile': (context) => UserProfileScreen(),
+        '/userManagement': (context) => const AdminUserManagementScreen(),
+
         '/admin/dashboard': (context) => AdminDashboardScreen(),
         '/admin/orders': (context) => AllOrdersScreen(),
         '/admin/add': (context) => AdminAddDishScreen(),
@@ -99,6 +104,13 @@ class _MyAppState extends State<MyApp> {
             ),
           );
         }
+        if (settings.name == '/admin/orderDetails') {
+          final args = settings.arguments as TblOrder;
+          return MaterialPageRoute(
+            builder: (context) => AdminOrderDetailScreen(order: args),
+          );
+        }
+
         return null;
       },
     );

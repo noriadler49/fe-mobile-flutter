@@ -288,12 +288,43 @@ class _MyCartState extends State<MyCart> {
                                 ),
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(8),
-                                  child: Image.asset(
-                                    imageName,
-                                    width: 50,
-                                    height: 50,
-                                    fit: BoxFit.cover,
-                                  ),
+                                  child:
+                                      (dish?.dishImageUrl?.startsWith('http') ??
+                                          false)
+                                      ? Image.network(
+                                          dish!.dishImageUrl!,
+                                          width: 50,
+                                          height: 50,
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                                return Container(
+                                                  width: 50,
+                                                  height: 50,
+                                                  color: Colors.grey[300],
+                                                  child: const Icon(
+                                                    Icons.image_not_supported,
+                                                  ),
+                                                );
+                                              },
+                                        )
+                                      : Image.asset(
+                                          'assets/${dish?.dishImageUrl ?? 'default.png'}',
+                                          width: 50,
+                                          height: 50,
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                                return Container(
+                                                  width: 50,
+                                                  height: 50,
+                                                  color: Colors.grey[300],
+                                                  child: const Icon(
+                                                    Icons.image_not_supported,
+                                                  ),
+                                                );
+                                              },
+                                        ),
                                 ),
                               ],
                             ),

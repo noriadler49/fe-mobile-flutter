@@ -736,7 +736,7 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
         ],
         onTap: (index) async {
           if (index == 0) Navigator.pushNamed(context, '/admin/dashboard');
-          if (index == 1) Navigator.pushNamed(context, '');
+          if (index == 1) Navigator.pushNamed(context, '/userManagement');
           if (index == 2) print('Like tapped');
           if (index == 3) {
             if (await checkIsLoggedIn()) {

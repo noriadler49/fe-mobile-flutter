@@ -39,6 +39,58 @@ class _FoodDealScreenState extends State<FoodDealScreen> {
     }
   }
 
+  Widget _buildFoodImage(String? imagePath) {
+    if (imagePath != null && imagePath.startsWith('http')) {
+      return Image.network(
+        imagePath,
+        width: MediaQuery.of(context).size.width * 0.85,
+        height: 200,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            width: MediaQuery.of(context).size.width * 0.85,
+            height: 200,
+            color: Colors.grey[300],
+            child: const Icon(Icons.image_not_supported),
+          );
+        },
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Center(
+            child: CircularProgressIndicator(
+              value: loadingProgress.expectedTotalBytes != null
+                  ? loadingProgress.cumulativeBytesLoaded /
+                        loadingProgress.expectedTotalBytes!
+                  : null,
+            ),
+          );
+        },
+      );
+    } else if (imagePath != null && imagePath.isNotEmpty) {
+      return Image.asset(
+        'assets/$imagePath',
+        width: MediaQuery.of(context).size.width * 0.85,
+        height: 200,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            width: MediaQuery.of(context).size.width * 0.85,
+            height: 200,
+            color: Colors.grey[300],
+            child: const Icon(Icons.image_not_supported),
+          );
+        },
+      );
+    } else {
+      return Container(
+        width: MediaQuery.of(context).size.width * 0.85,
+        height: 200,
+        color: Colors.grey[300],
+        child: const Icon(Icons.image_not_supported),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -115,12 +167,7 @@ class _FoodDealScreenState extends State<FoodDealScreen> {
                             borderRadius: BorderRadius.vertical(
                               top: Radius.circular(12),
                             ),
-                            child: Image.asset(
-                              'assets/${food.dishImageUrl ?? 'default.png'}',
-                              width: MediaQuery.of(context).size.width * 0.85,
-                              height: 200,
-                              fit: BoxFit.cover,
-                            ),
+                            child: _buildFoodImage(food.dishImageUrl),
                           ),
                           Padding(
                             padding: EdgeInsets.all(12.0),

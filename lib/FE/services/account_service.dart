@@ -215,4 +215,56 @@ class AccountService {
       return false;
     }
   }
+
+  Future<bool> adminResetPassword(int accountId, String newPassword) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/admin-reset-password/$accountId'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'newPassword': newPassword}),
+      );
+
+      print("Admin Reset Password: ${response.statusCode} - ${response.body}");
+      return response.statusCode == 200;
+    } catch (e) {
+      print("Reset password error: $e");
+      return false;
+    }
+  }
+
+Future<void> createAccount(String username, String password, String role,
+    String phone, String address) async {
+  final url = Uri.parse('$baseUrl/create');
+  final body = jsonEncode({
+    'accountUsername': username,
+    'accountPassword': password,
+    'accountRole': role,
+    'phoneNumber': phone,
+    'address': address,
+  });
+
+  final response = await http.post(
+    url,
+    headers: {'Content-Type': 'application/json'},
+    body: body,
+  );
+
+  if (response.statusCode != 200 && response.statusCode != 201) {
+    throw Exception('Failed to create account: ${response.body}');
+  }
+}
+
+
+  Future<bool> deleteAccount(int accountId) async {
+    try {
+      final response = await http.delete(Uri.parse('$baseUrl/$accountId'));
+
+      print("Delete Account: ${response.statusCode} - ${response.body}");
+
+      return response.statusCode == 200;
+    } catch (e) {
+      print("Delete account error: $e");
+      return false;
+    }
+  }
 }

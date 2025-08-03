@@ -242,7 +242,7 @@ class AdminDashboardScreen extends StatelessWidget {
         ],
         onTap: (index) async {
           if (index == 0) return;
-          if (index == 1) Navigator.pushNamed(context, 'userManagement');
+          if (index == 1) Navigator.pushNamed(context, '/userManagement');
           if (index == 2) print('Like tapped');
           if (index == 3) {
             bool loggedIn = await AuthStatus.checkIsLoggedIn();

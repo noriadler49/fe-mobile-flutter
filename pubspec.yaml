@@ -16,6 +16,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   path_provider: ^2.1.5
   pdf: ^3.11.0
+  intl: ^0.18.1
+  permission_handler: ^11.0.1
   printing: ^5.13.3
   image_picker: ^1.1.2
   json_annotation: ^4.8.0
@@ -36,3 +38,4 @@ flutter:
     - assets/avata.png
     - assets/default.jpg
     - assets/chickenwings.png
+    - assets/fonts/times.ttf
