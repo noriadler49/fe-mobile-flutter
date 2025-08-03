@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:fe_mobile_flutter/models/user_model.dart';
+import 'package:fe_mobile_flutter/trash/models/user_model.dart';
 import 'dart:io';
 import 'package:http_parser/http_parser.dart';
-import 'package:fe_mobile_flutter/models/dish_model.dart';
-import 'package:fe_mobile_flutter/models/ingredient_model.dart';
+import 'package:fe_mobile_flutter/trash/models/dish_model.dart';
+import 'package:fe_mobile_flutter/trash/models/ingredient_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 

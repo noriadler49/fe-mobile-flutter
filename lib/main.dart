@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fe_mobile_flutter/FE/auth_status.dart';
 import 'FE/home_screen.dart';
 import 'FE/food_deal_screen.dart';
-import 'FE/food_deal_details.dart';
+import 'trash/food_deal_details.dart';
 import 'FE/food_details_screen.dart';
 import 'FE/my_cart.dart';
 import 'FE/signup_screen.dart';
@@ -21,6 +21,7 @@ import 'FE/ADMIN/admin_order_detail.dart';
 import 'FE/models1/dish_dto.dart';
 import 'FE/models1/order.dart';
 import 'FE/order_follow.dart';
+import 'FE/models1/dishdto_admin.dart';
 
 void main() {
   runApp(MyApp());
@@ -57,7 +58,7 @@ class _MyAppState extends State<MyApp> {
       routes: {
         '/': (context) => HomeScreen(),
         '/deals': (context) => FoodDealScreen(),
-        '/details': (context) => FoodDealDetails(),
+        // '/details': (context) => FoodDealDetails(),
         '/cart': (context) => MyCart(),
         '/signup': (context) => SignUpScreen(),
         '/login': (context) => LoginScreen(),
@@ -69,7 +70,17 @@ class _MyAppState extends State<MyApp> {
 
         '/admin/dashboard': (context) => AdminDashboardScreen(),
         '/admin/orders': (context) => AllOrdersScreen(),
-        '/admin/add': (context) => AdminAddDishScreen(),
+        '/admin/add': (context) => AdminAddDishScreen(
+          dish: DishDtoAdmin(
+            id: null,
+            name: '',
+            price: 0,
+            dishImageUrl: '',
+            description: '',
+            categoryId: 1,
+            ingredientIds: [],
+          ),
+        ),
         '/admin/ingredients': (context) => ManageIngredientsScreen(),
       },
       onGenerateRoute: (settings) {

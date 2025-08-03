@@ -29,16 +29,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
         );
         if (account != null) {
           // Update profile with phone and address if provided
-          if (phoneController.text.isNotEmpty || addressController.text.isNotEmpty) {
+          if (phoneController.text.isNotEmpty ||
+              addressController.text.isNotEmpty) {
             final updatedAccount = TblAccount(
               accountId: account.accountId,
               accountUsername: account.accountUsername,
               accountPassword: '',
               accountRole: account.accountRole,
-              phoneNumber: phoneController.text.trim().isNotEmpty ? phoneController.text.trim() : null,
-              address: addressController.text.trim().isNotEmpty ? addressController.text.trim() : null,
+              phoneNumber: phoneController.text.trim().isNotEmpty
+                  ? phoneController.text.trim()
+                  : null,
+              address: addressController.text.trim().isNotEmpty
+                  ? addressController.text.trim()
+                  : null,
             );
-            await _accountService.updateProfile(account.accountId, updatedAccount);
+            await _accountService.updateProfile(
+              account.accountId,
+              updatedAccount,
+            );
           }
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -46,7 +54,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
               backgroundColor: Colors.green,
             ),
           );
-          Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/login',
+            (route) => false,
+          );
         } else {
           throw Exception('Registration failed');
         }
@@ -76,107 +88,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
           },
         ),
       ),
-      drawer: Drawer(
-        child: FutureBuilder<bool>(
-          future: AuthStatus.checkIsLoggedIn(),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData || !snapshot.data!) {
-              return ListView(
-                padding: EdgeInsets.zero,
-                children: [
-                  DrawerHeader(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Colors.red, Colors.redAccent],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                    ),
-                    child: Text(
-                      'Menu',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.home, color: Colors.red),
-                    title: Text('Home'),
-                    onTap: () => Navigator.pushNamedAndRemoveUntil(
-                      context,
-                      '/',
-                      (route) => false,
-                    ),
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.login, color: Colors.red),
-                    title: Text('Log In'),
-                    onTap: () => Navigator.pushNamed(context, '/login'),
-                  ),
-                ],
-              );
-            }
-            return ListView(
-              padding: EdgeInsets.zero,
-              children: [
-                DrawerHeader(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.red, Colors.redAccent],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                  ),
-                  child: Text(
-                    'Menu',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                ListTile(
-                  leading: Icon(Icons.home, color: Colors.red),
-                  title: Text('Home'),
-                  onTap: () => Navigator.pushNamedAndRemoveUntil(
-                    context,
-                    '/',
-                    (route) => false,
-                  ),
-                ),
-                ListTile(
-                  leading: Icon(Icons.shopping_cart, color: Colors.red),
-                  title: Text('Cart'),
-                  onTap: () => Navigator.pushNamed(context, '/cart'),
-                ),
-                ListTile(
-                  leading: Icon(Icons.favorite, color: Colors.red),
-                  title: Text('Favorites'),
-                  onTap: () => Navigator.pushNamed(context, '/favorites'),
-                ),
-                ListTile(
-                  leading: Icon(Icons.history, color: Colors.red),
-                  title: Text('Order History'),
-                  onTap: () => Navigator.pushNamed(context, '/orderHistory'),
-                ),
-                ListTile(
-                  leading: Icon(Icons.settings, color: Colors.red),
-                  title: Text('Settings'),
-                  onTap: () => Navigator.pushNamed(context, '/settings'),
-                ),
-                ListTile(
-                  leading: Icon(Icons.contact_support, color: Colors.red),
-                  title: Text('Contact Us'),
-                  onTap: () => Navigator.pushNamed(context, '/contact'),
-                ),
-              ],
-            );
-          },
-        ),
-      ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -186,9 +97,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Center(
-                    child: Icon(Icons.star, color: Colors.red, size: 80),
-                  ),
+                  Center(child: Icon(Icons.star, color: Colors.red, size: 80)),
                   SizedBox(height: 20),
                   Text(
                     'Create an Account',
@@ -223,8 +132,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     'Password',
                     passwordController,
                     obscure: true,
-                    validator: (value) => value!.length < 6
-                        ? 'Password must be at least 6 characters'
+                    validator: (value) => value!.length < 4
+                        ? 'Password must be at least 4 characters'
                         : null,
                   ),
                   SizedBox(height: 20),
@@ -280,7 +189,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
         currentIndex: 0, // No specific tab selected for signup
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Cart'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_cart),
+            label: 'Cart',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Like'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],
@@ -316,9 +228,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           prefixIcon: Icon(icon, color: Colors.red),
           labelText: label,
           labelStyle: TextStyle(color: Colors.grey[600]),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
             borderSide: BorderSide(color: Colors.red),

@@ -21,6 +21,7 @@ class AdminDishService {
     DishDtoAdmin dish,
     File? image,
     String? imageUrl,
+    
   ) async {
     final Map<String, dynamic> dishJson = dish.toJson();
 

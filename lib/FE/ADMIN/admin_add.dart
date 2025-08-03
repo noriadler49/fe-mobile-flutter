@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:fe_mobile_flutter/FE/models1/dishdto_admin.dart';
-import 'package:fe_mobile_flutter/services/api_service.dart';
+import 'package:fe_mobile_flutter/trash/services/api_service.dart';
 import 'package:fe_mobile_flutter/fe/admin/admin_search_button.dart';
 import 'package:fe_mobile_flutter/FE/auth_status.dart';
 import 'package:image_picker/image_picker.dart';
@@ -9,11 +9,21 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'package:fe_mobile_flutter/FE/services/admin_dish_service.dart';
-
+import 'package:fe_mobile_flutter/FE/models1/ingredient.dart';
+import 'package:fe_mobile_flutter/FE/services/ingredient_service.dart';
 import 'dart:io';
 
+// class AdminAddDishScreen extends StatefulWidget {
+
+//   const AdminAddDishScreen({super.key});
+
+//   @override
+//   _AdminAddDishScreenState createState() => _AdminAddDishScreenState();
+// }
 class AdminAddDishScreen extends StatefulWidget {
-  const AdminAddDishScreen({super.key});
+  final DishDtoAdmin dish;
+
+  const AdminAddDishScreen({Key? key, required this.dish}) : super(key: key);
 
   @override
   _AdminAddDishScreenState createState() => _AdminAddDishScreenState();
@@ -25,11 +35,18 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
   final _imgUrlController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _categoryIdController = TextEditingController();
+  final _ingredientIdsController = TextEditingController();
   File? _selectedImage;
   final ImagePicker _picker = ImagePicker();
 
   List<DishDtoAdmin> dishes = [];
   List<DishDtoAdmin> allDishes = [];
+
+  int? selectedDishTypeId;
+  List<int> selectedIngredientIds = [];
+  List<TblIngredient> allIngredients = [];
+  bool isLoadingIngredients = true;
+  bool _showIngredientBox = false;
 
   bool _isEditing = false;
   int? _editingId;
@@ -38,6 +55,17 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
   void initState() {
     super.initState();
     _loadDishes();
+    _fetchIngredients();
+    if (widget.dish.id != null) {
+      _isEditing = true;
+      _editingId = widget.dish.id;
+      _nameController.text = widget.dish.name;
+      _priceController.text = widget.dish.price.toString();
+      _imgUrlController.text = widget.dish.dishImageUrl ?? '';
+      _descriptionController.text = widget.dish.description ?? '';
+      _categoryIdController.text = widget.dish.categoryId.toString();
+      selectedIngredientIds = widget.dish.ingredientIds ?? [];
+    }
   }
 
   @override
@@ -77,6 +105,23 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
     }
   }
 
+  Future<void> _fetchIngredients() async {
+    try {
+      final ingredients = await IngredientService().getIngredients();
+      setState(() {
+        allIngredients = ingredients;
+        isLoadingIngredients = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoadingIngredients = false;
+      });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to load ingredients')));
+    }
+  }
+
   Future<void> _addOrUpdateDish() async {
     final name = _nameController.text.trim();
     final price = _priceController.text.trim();
@@ -103,6 +148,7 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
         description: description.isEmpty ? 'No description' : description,
         price: priceValue,
         categoryId: categoryId,
+        ingredientIds: selectedIngredientIds,
       );
 
       if (_isEditing && _editingId != null) {
@@ -136,10 +182,12 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
     _priceController.clear();
     _imgUrlController.clear();
     _descriptionController.clear();
+    _categoryIdController.clear();
     setState(() {
       _selectedImage = null;
       _isEditing = false;
       _editingId = null;
+      selectedIngredientIds = [];
     });
   }
 
@@ -334,11 +382,57 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                         }
                       },
                     ),
+
                     TextField(
                       controller: _descriptionController,
                       decoration: InputDecoration(labelText: 'Description:'),
                       maxLines: 2,
                     ),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _showIngredientBox = !_showIngredientBox;
+                        });
+                      },
+                      child: Text(
+                        _showIngredientBox
+                            ? 'Ẩn nguyên liệu'
+                            : 'Chọn nguyên liệu',
+                      ),
+                    ),
+
+                    if (_showIngredientBox)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(height: 8),
+                          Text(
+                            "Select Ingredients",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          Column(
+                            children: allIngredients.map((ingredient) {
+                              final id = ingredient.ingredientId!;
+                              return CheckboxListTile(
+                                title: Text(
+                                  '${ingredient.ingredientName ?? 'Unknown'} (ID: $id)',
+                                ),
+                                value: selectedIngredientIds.contains(id),
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    if (value == true) {
+                                      selectedIngredientIds.add(id);
+                                    } else {
+                                      selectedIngredientIds.remove(id);
+                                    }
+                                  });
+                                },
+                              );
+                            }).toList(),
+                          ),
+                        ],
+                      ),
+
                     TextField(
                       controller: _categoryIdController,
                       decoration: InputDecoration(labelText: 'Category (id):'),
@@ -367,6 +461,7 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                         ),
                       ],
                     ),
+
                     if (_selectedImage != null)
                       Padding(
                         padding: const EdgeInsets.only(top: 8.0),
@@ -419,18 +514,19 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                           key: ValueKey(dishes.length),
                           border: TableBorder.all(color: Colors.grey),
                           columnWidths: {
-                            0: FlexColumnWidth(0.5), // ID
-                            1: FlexColumnWidth(1.4), // Name
-                            2: FlexColumnWidth(1), // Price
-                            3: FlexColumnWidth(0.8), // Image
+                            0: FlexColumnWidth(0.6), // ID
+                            1: FlexColumnWidth(1.8), // Name
+                            2: FlexColumnWidth(1.2), // Price
+                            3: FlexColumnWidth(0.7), // Image
                             4: FlexColumnWidth(
-                              1.5,
+                              1.9,
                             ), // Description ✅ tăng chiều rộng
-                            5: FlexColumnWidth(1.3), // Category ID
-                            6: FlexColumnWidth(1.2), // Action buttons
+                            5: FlexColumnWidth(0.9), // Ingredient IDs
+                            6: FlexColumnWidth(1.6), // Category ID
+                            7: FlexColumnWidth(1.2), // Action buttons
                           },
                           defaultColumnWidth: FixedColumnWidth(
-                            120,
+                            150,
                           ), // Adjusted for smaller screens
                           children: [
                             TableRow(
@@ -497,7 +593,7 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                                 Padding(
                                   padding: EdgeInsets.all(10.0),
                                   child: Text(
-                                    'Image',
+                                    'Img',
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 14,
@@ -528,6 +624,17 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                                     },
                                   ),
                                 ),
+                                Padding(
+                                  padding: EdgeInsets.all(10.0),
+                                  child: Text(
+                                    'Ingre',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+
                                 Padding(
                                   padding: EdgeInsets.all(10.0),
                                   child: FilterButtonWithPopup(
@@ -658,12 +765,25 @@ class _AdminAddDishScreenState extends State<AdminAddDishScreen> {
                                                 style: TextStyle(fontSize: 12),
                                               ),
                                       ),
+
                                       Padding(
                                         padding: EdgeInsets.all(10.0),
                                         child: Text(
                                           dish.description ?? 'N/A',
                                           overflow: TextOverflow.ellipsis,
                                           maxLines: 2,
+                                          style: TextStyle(fontSize: 12),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: EdgeInsets.all(10.0),
+                                        child: Text(
+                                          (dish.ingredientIds != null &&
+                                                  dish
+                                                      .ingredientIds!
+                                                      .isNotEmpty)
+                                              ? dish.ingredientIds!.join(', ')
+                                              : 'None',
                                           style: TextStyle(fontSize: 12),
                                         ),
                                       ),

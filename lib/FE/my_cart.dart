@@ -166,6 +166,55 @@ class _MyCartState extends State<MyCart> {
           ),
         );
       }
+    } else {
+      // 👇 Quantity is 1 → remove item
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text("Remove Item"),
+          content: Text("Do you want to remove this item from your cart?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text("Remove", style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        ),
+      );
+
+      if (confirmed == true) {
+        final success = await CartItemService().removeCartItem(
+          currentItem.cartItemId,
+        );
+        if (success) {
+          setState(() {
+            cartItems.removeAt(index);
+            selectedItems.remove(currentItem.cartItemId);
+          });
+
+          if (cartItems.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text("Cart is now empty."),
+                backgroundColor: Colors.red,
+                duration: Duration(seconds: 2),
+              ),
+            );
+            Navigator.pushReplacementNamed(context, '/');
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Failed to remove item"),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 

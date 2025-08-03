@@ -6,8 +6,8 @@ class DishDto {
   final String? dishDescription;
   final int? categoryId;
   final String? categoryName;
-  final List<String>? ingredientNames;
-
+  // final List<String>? ingredientNames;
+  final List<String>? ingredientNames; // ✅ Sửa tên thuộc tính viết đúng kiểu camelCase
   DishDto({
     required this.dishId,
     required this.dishName,

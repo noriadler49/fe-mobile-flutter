@@ -9,7 +9,7 @@ class DishDtoAdmin {
   final DateTime? createdAt;
   final DateTime? updatedAt;
   final List<int>? ingredientIds;
-
+  
   DishDtoAdmin({
     this.id,
     required this.name,

@@ -452,10 +452,12 @@ class _HomeScreenState extends State<HomeScreen> {
             TextField(
               controller: _searchController,
               onChanged: (value) {
-                final query = value.toLowerCase();
+                final query = value.toLowerCase().trim();
                 setState(() {
                   foods = allFoods.where((dish) {
-                    return dish.dishName.toLowerCase().contains(query);
+                    final name = dish.dishName?.toLowerCase() ?? '';
+                    final category = dish.categoryName?.toLowerCase() ?? '';
+                    return name.contains(query) || category.contains(query);
                   }).toList();
                 });
               },
