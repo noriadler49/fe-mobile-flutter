@@ -621,17 +621,20 @@ class _AllOrdersScreenState extends State<AllOrdersScreen> {
         selectedItemColor: Colors.red,
         unselectedItemColor: Colors.grey,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
-            label: 'Cart',
+            icon: Icon(Icons.dashboard),
+            label: 'Dashboard',
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Like'),
+          BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Users'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Settings',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],
         onTap: (index) async {
-          if (index == 0) return;
-          if (index == 1) Navigator.pushNamed(context, '/cart');
+          if (index == 0) Navigator.pushNamed(context, '/admin/dashboard');
+          if (index == 1) Navigator.pushNamed(context, '/userManagement');
           if (index == 2) print('Like tapped');
           if (index == 3) {
             if (await AuthStatus.checkIsLoggedIn()) {
